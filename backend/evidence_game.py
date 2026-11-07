@@ -88,7 +88,7 @@ def rush_hour_cheat(games: int = 300, rounds: int = 60, good_effect: float = 0.2
             "good_median_round": statistics.median(good_found_at) if good_found_at else None}
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and "--forced" not in __import__("sys").argv:
     print("peeking experiment (1,000 games x 100 hours)...", flush=True)
     peek = peeking()
     for h in (10, 25, 50, 100):
@@ -103,4 +103,56 @@ if __name__ == "__main__":
               f"good offer confirmed in {v['good_confirmed']:.0%} of games (median round {v['good_median_round']})")
     out = HERE / "results_game.json"
     out.write_text(json.dumps({"peeking": peek, "rush_hour_cheat": cheat}, indent=1))
+    print(f"saved {out}")
+
+
+# --------------------------------------------------------------------------- #
+# 3. Forced decision: no hiding behind NOT SURE
+# --------------------------------------------------------------------------- #
+def forced_decision(games: int = 300, hours: int = 120, good_effect: float = 0.20, seed: int = 95000) -> dict:
+    """Run the rush-hour cheat for `hours` trading hours (10 days), then EVERY method must
+    answer: REAL, or "not proven -> treat as no effect". NOT SURE counts as "no".
+    Scored on both mistakes: bad offer called REAL (fooled), good offer not called REAL (missed)."""
+    from scipy import stats
+    methods = ["ab_test_once", "pvalue_every_hour", "pvalue_once", "evalue_every_hour"]
+    called_real = {m: {"good": 0, "bad": 0} for m in methods}
+    for g in range(games):
+        shop = Shop(seed=seed + g, good_effect=good_effect)
+        shop.run(PAST_HOURS)
+        normal_hours = [r.customers for r in shop.history]          # 8 weeks, no offers
+        agent = CarefulAgent(shop.history)
+        seen = {"good": [], "bad": []}
+        peeked = {"good": False, "bad": False}
+        e_hit = {"good": False, "bad": False}
+        for _ in range(hours):
+            offer = "bad" if shop.forecast_next_hour()["expected"] >= RUSH_THRESHOLD else "good"
+            rec = shop.step(offer)
+            agent.judge(rec)
+            seen[offer].append(rec.customers)
+            ev = agent.evidence[offer]
+            peeked[offer] |= _norm_sf(ev.S_eff / math.sqrt(ev.tries)) <= P_LEVEL
+            e_hit[offer] |= ev.e >= E_THRESHOLD
+        for offer in OFFERS:
+            ev = agent.evidence[offer]
+            if len(seen[offer]) >= 2:
+                ab_p = stats.ttest_ind(seen[offer], normal_hours, alternative="greater").pvalue
+                called_real["ab_test_once"][offer] += ab_p <= P_LEVEL
+            if ev.tries:
+                called_real["pvalue_once"][offer] += _norm_sf(ev.S_eff / math.sqrt(ev.tries)) <= P_LEVEL
+            called_real["pvalue_every_hour"][offer] += peeked[offer]
+            called_real["evalue_every_hour"][offer] += e_hit[offer]
+    return {"games": games, "hours": hours, "good_effect": good_effect,
+            "fooled": {m: called_real[m]["bad"] / games for m in methods},
+            "found": {m: called_real[m]["good"] / games for m in methods}}
+
+
+if __name__ == "__main__" and "--forced" in __import__("sys").argv:
+    out = HERE / "results_game.json"
+    data = json.loads(out.read_text())
+    data["forced_decision"] = {f"{int(e * 100)}pct": forced_decision(good_effect=e) for e in (0.20, 0.08)}
+    out.write_text(json.dumps(data, indent=1))
+    for k, v in data["forced_decision"].items():
+        print(f"good offer +{k} after {v['hours']} hours, {v['games']} games:")
+        for m in v["fooled"]:
+            print(f"  {m:20s} fooled (bad called REAL) {v['fooled'][m]:6.1%}   found (good called REAL) {v['found'][m]:6.1%}")
     print(f"saved {out}")

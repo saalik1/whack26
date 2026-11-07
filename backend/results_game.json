@@ -430,5 +430,41 @@
    "good_confirmed": 0.12,
    "good_median_round": 41.5
   }
+ },
+ "forced_decision": {
+  "20pct": {
+   "games": 300,
+   "hours": 120,
+   "good_effect": 0.2,
+   "fooled": {
+    "ab_test_once": 1.0,
+    "pvalue_every_hour": 0.15333333333333332,
+    "pvalue_once": 0.03666666666666667,
+    "evalue_every_hour": 0.013333333333333334
+   },
+   "found": {
+    "ab_test_once": 0.0,
+    "pvalue_every_hour": 1.0,
+    "pvalue_once": 1.0,
+    "evalue_every_hour": 0.98
+   }
+  },
+  "8pct": {
+   "games": 300,
+   "hours": 120,
+   "good_effect": 0.08,
+   "fooled": {
+    "ab_test_once": 1.0,
+    "pvalue_every_hour": 0.13333333333333333,
+    "pvalue_once": 0.03,
+    "evalue_every_hour": 0.0033333333333333335
+   },
+   "found": {
+    "ab_test_once": 0.0,
+    "pvalue_every_hour": 0.77,
+    "pvalue_once": 0.6066666666666667,
+    "evalue_every_hour": 0.3433333333333333
+   }
+  }
  }
 }
