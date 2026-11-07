@@ -11,3 +11,7 @@ uvicorn
 
 # optional: Streamlit UI
 streamlit
+
+# tests (python -m pytest)
+pytest
+httpx

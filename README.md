@@ -34,12 +34,36 @@ The **The evidence** button in the game opens `frontend/evidence.html`. Chart 1 
 - Bad offer launched in rush hours: naive AI fooled in **100%** of games, ours in **0.7%**; ours still
   confirms the good offer in 90% of games (median 27 rounds). (300 games)
 
+**Forced decision, no hiding behind NOT SURE** (10 trading days of the rush-hour cheat, then every
+method must say REAL or "not proven"; NOT SURE counts as no; 300 games):
+
+| Method | Fooled (bad called REAL) | Found +20% good offer | Found +8% good offer |
+|---|---|---|---|
+| Standard A/B test: offer hours vs normal hours, checked once | 100.0% | 0% | 0% |
+| Ordinary p-value, checked every hour | 15.3% | 100% | 77% |
+| Ordinary p-value, checked once at the end | 3.7% | 100% | 61% |
+| **Our AI: e-values, checked every hour** | 1.3% | 98% | 34% |
+
+Honest cost: small effects need more data. A p-value checked once finds more +8% offers, but only if
+nobody ever looks early; in a live setting you look every hour.
+
 Reproduce it yourself (fixed seeds, same numbers every time):
 ```
 python -m backend.benchmark --cheat all --games 200   # ~7 min, writes backend/results.csv
 python -m backend.evidence_game                       # ~1 min, writes backend/results_game.json
+python -m backend.evidence_game --forced              # ~15 s, adds the forced-decision table
 python -m backend.make_chart                          # redraws both evidence charts
 ```
+
+## Tests
+```
+python -m pytest -q        # 85 tests, ~1.5 min
+```
+They check both simulators, both AIs, the game, the API and the screen wiring, including:
+pure noise finds nothing; every cheat fools the naive AI but not ours; the careful AI never
+reads the hidden truth (we corrupt it and the verdicts don't change); one hour is never enough
+to say REAL; the e-value stays valid however often you check; the screen shows the server's
+verdicts, not its own.
 
 ## How our AI works
 - **Daily engine** (`backend/defender.py`, used for the evidence): trend removal (STL), weekday/payday

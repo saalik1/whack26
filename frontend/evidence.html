@@ -13,6 +13,10 @@
     .figure img{display:block;width:100%;height:auto;border-radius:10px}
     .figure p{font-size:13px;margin:10px 4px 2px}
     .back{display:inline-block;margin-bottom:14px}
+    table.results{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+    table.results th,table.results td{border-bottom:2px solid #f0e6cc;padding:8px 10px;text-align:right}
+    table.results th:first-child,table.results td:first-child{text-align:left}
+    table.results th{font-size:11px;text-transform:uppercase;letter-spacing:.4px}
   </style>
 </head>
 <body>
@@ -33,6 +37,25 @@
       <img src="evidence_game.png" alt="Line chart: an ordinary p-value checked after every round is eventually fooled 19 percent of the time; our e-values stay at 1.7 percent, under the 2.5 percent budget. Bar chart: in the live game the naive AI is fooled by rush-hour bad offers in 100 percent of games, ours in 0.7 percent.">
       <p>Same AI, only the decision rule differs: an ordinary p-value checked every round is fooled 19% of the time; our e-values 1.7%.
         In the live game, a bad offer launched in rush hours fools the naive AI in every game and ours in 0.7%.</p>
+    </section>
+
+    <section class="figure">
+      <h2>3. No hiding behind "not sure": every method forced to decide</h2>
+      <p>The rush-hour cheat runs for 10 trading days (120 hours), then every method must answer REAL or
+        "not proven, treat as no effect". NOT SURE counts as "no", so abstaining costs missed good offers. 300 games each, fresh seeds.</p>
+      <table class="results">
+        <thead><tr><th>Method</th><th>Fooled (bad offer called REAL)</th><th>Found +20% good offer</th><th>Found +8% good offer</th></tr></thead>
+        <tbody>
+          <tr><td>Standard A/B test: offer hours vs normal hours, checked once</td><td>100.0%</td><td>0%</td><td>0%</td></tr>
+          <tr><td>Ordinary p-value, checked every hour</td><td>15.3%</td><td>100%</td><td>77%</td></tr>
+          <tr><td>Ordinary p-value, checked once at the end</td><td>3.7%</td><td>100%</td><td>61%</td></tr>
+          <tr><td><strong>Our AI: e-values, checked every hour</strong></td><td>1.3%</td><td>98%</td><td>34%</td></tr>
+        </tbody>
+      </table>
+      <p>The textbook A/B test is wrong both ways: the cheat lines bad offers up with rush hours (and good ones with quiet hours).
+        Checking a p-value every hour gets fooled 15% of the time. Our AI is fooled 1.3% and still finds 98% of +20% offers.
+        The honest cost: a small (+8%) effect needs more than 10 days for us; a p-value checked only once finds more of them,
+        but only if you truly never look early.</p>
     </section>
   </main>
 </body>
