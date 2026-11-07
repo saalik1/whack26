@@ -14,7 +14,7 @@
       <div><h1>Fool the AI</h1><p>Sneak a bad offer past the AI by launching it when the shop is already busy.</p></div>
       <div class="header-actions">
         <div class="scores" aria-label="Game scores"><span>You fooled the AI: <strong id="careful-score">0 / 0</strong></span><span>Naive AI fooled: <strong id="naive-score">0 times</strong></span></div>
-        <form action="index.html"><button class="end-game" type="submit">End Game <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4H4v16h6M10 12h10m-4-4 4 4-4 4"/></svg></button></form>
+        <a class="evidence-link" href="evidence.png" target="_blank" rel="noopener">The evidence</a><form action="index.html"><button class="end-game" type="submit">End Game <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4H4v16h6M10 12h10m-4-4 4 4-4 4"/></svg></button></form>
       </div>
     </header>
 
@@ -34,7 +34,8 @@
       <button class="offer bad" type="button" data-offer="bad"><strong>Bad Offer</strong><span>Does nothing at all</span></button>
       <button class="offer random" type="button" data-offer="random"><strong>Random Event</strong><span>Shake up the next hour</span></button>
     </section>
-    <p class="hint">Each offer runs for the next hour. Watch the blue prediction: a high number means a rush is coming.</p>
+    <p class="hint">Each offer runs for the next hour. Watch the blue prediction: a high number means a rush is coming.
+      <label class="fast-forward"><input type="checkbox" id="fast-forward"> Fast-forward: run each offer for 12 hours</label></p>
     <p id="error" class="error" role="alert" hidden></p>
 
     <section class="verdicts" aria-label="AI verdicts" aria-live="polite" aria-atomic="true">

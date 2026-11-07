@@ -149,6 +149,10 @@ class Evidence:
         return _anytime_upper(self.S_eff, self.tries, alpha) * math.sqrt(self.inflation) / math.sqrt(mean_expected)
 
 
+def _fmt_e(e: float) -> str:
+    return "over 1,000" if e >= 1000 else f"{e:.0f}"
+
+
 class CarefulAgent:
     def __init__(self, past_records: Optional[List[HourRecord]] = None) -> None:
         past = [r.public() for r in (past_records or [])]
@@ -188,7 +192,7 @@ class CarefulAgent:
         if e >= E_THRESHOLD:
             verdict, label = "REAL", "IT WORKED!"
             tail = (f" Over {hours} with this offer, customers are {ev.lift:+.0%} above what I expected. "
-                    f"Evidence {e:.0f} beats the {E_THRESHOLD:.0f} I need, so this is beyond luck.")
+                    f"Evidence {_fmt_e(e)} beats the {E_THRESHOLD:.0f} I need, so this is beyond luck.")
         elif upper < MIN_WORTHWHILE_LIFT:
             verdict, label = "FAKE", "NO REAL LIFT"
             tail = (f" Over {hours} with this offer, any lift is at most {max(upper, 0):+.0%}: "

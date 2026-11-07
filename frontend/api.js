@@ -1,30 +1,28 @@
-/** Backend boundary. Set apiUrl to the round endpoint when the backend is ready.
- * POST body: { offer: 'good' | 'bad' | 'random', state: ShopState }
- * Response: { customers: number, nextPrediction: number, weather: string }
- * The backend should own the simulation and verdicts in the production game.
+/** Backend boundary: the server owns the simulation AND both AIs' verdicts.
+ *  POST /api/start                          -> first screen
+ *  POST /api/round { offer, hours, state }  -> one round (hours > 1 fast-forwards)
  */
-export const config = { apiUrl: null };
+export const config = { apiUrl: '/api/round', startUrl: '/api/start' };
 
-export async function runRound(offer, state) {
+async function post(url, body) {
+  const response = await fetch(url, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin', body: JSON.stringify(body ?? {}),
+  });
+  if (!response.ok) throw new Error('The shop could not complete this round. Please try again.');
+  return response.json();
+}
+
+export async function startGame() {
+  return post(config.startUrl, {});
+}
+
+export async function runRound(offer, state, hours = 1) {
   if (!['good', 'bad', 'random'].includes(offer)) throw new Error('Unknown offer');
-  if (config.apiUrl) {
-    const response = await fetch(config.apiUrl, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ offer, state }),
-    });
-    if (!response.ok) throw new Error('The shop could not complete this round. Please try again.');
-    const result = await response.json();
-    if (!Number.isFinite(result.customers) || result.customers < 0 || !Number.isFinite(result.nextPrediction) || result.nextPrediction < 0 || typeof result.weather !== 'string') {
-      throw new Error('The shop returned an invalid round. Please try again.');
-    }
-    return result;
+  const result = await post(config.apiUrl, { offer, hours, state });
+  if (!Number.isFinite(result.customers) || !Number.isFinite(result.nextPrediction)
+      || typeof result.weather !== 'string' || !result.careful || !result.naive) {
+    throw new Error('The shop returned an invalid round. Please try again.');
   }
-  // Local demonstration only. Replace by connecting the endpoint above.
-  const variation = Math.floor(Math.random() * 7) - 3;
-  const lift = offer === 'good' ? 12 : offer === 'random' ? Math.floor(Math.random() * 25) - 12 : 0;
-  return {
-    customers: Math.max(3, state.prediction + lift + variation),
-    nextPrediction: [43, 48, 36, 25, 19, 14, 22, 30][(state.round + 1) % 8],
-    weather: offer === 'random' ? ['Sunny', 'Cloudy', 'Rainy'][Math.floor(Math.random() * 3)] : state.weather,
-  };
+  return result;
 }
