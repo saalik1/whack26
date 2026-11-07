@@ -20,7 +20,7 @@ from scipy import stats
 from statsmodels.stats.multitest import multipletests
 from statsmodels.tsa.seasonal import STL
 
-from whack26.backend.simulator import tweak_columns
+from backend.simulator import tweak_columns
 
 ALPHA = 0.05
 EXPLORE_FRAC = 0.5       # tuned with benchmark.py --tune

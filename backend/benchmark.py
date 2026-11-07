@@ -1,18 +1,20 @@
 """
 Demo, sanity checks and benchmark.
 
-  python benchmark.py                          demo + pure-noise check + benchmark (no cheat)
-  python benchmark.py --cheat fake_customers   same, with one cheat
-  python benchmark.py --cheat all --games 100  table of every cheat, saved to results.csv
-  python benchmark.py --tune                   tune the "split" design (explore split / threshold)
+Run from the repo root:
+  python -m backend.benchmark                          demo + pure-noise check + benchmark
+  python -m backend.benchmark --cheat fake_customers   same, with one cheat
+  python -m backend.benchmark --cheat all --games 200  every cheat, saves backend/results.csv
+  python -m backend.benchmark --tune                   tune the "split" design
 """
 import argparse
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from whack26.backend.defender import naive_researcher, popper_researcher
-from whack26.backend.simulator import CHEATS, CHEAT_TARGET, simulate
+from backend.defender import naive_researcher, popper_researcher
+from backend.simulator import CHEATS, CHEAT_TARGET, simulate
 
 
 def score(result, truth, cheat):
@@ -104,7 +106,7 @@ def benchmark_all(games):
         print(f"  done: {cheat}", flush=True)
     res = pd.DataFrame(rows).set_index("cheat").round(3)
     print("\n" + res.to_string())
-    res.to_csv("results.csv")
+    res.to_csv(Path(__file__).parent / "results.csv")
     print(f"\n{games} fresh games per cheat (seeds {EVAL_SEED}+), never used for tuning. Saved results.csv")
 
 
