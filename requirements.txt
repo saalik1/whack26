@@ -1,5 +1,12 @@
+# engine and statistics (simulator.py, defender.py, benchmark.py)
 numpy
 pandas
 scipy
 statsmodels
+
+# game backend (api.py, simulator2.py)
+fastapi
+uvicorn
+
+# optional: Streamlit UI
 streamlit
