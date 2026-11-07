@@ -4,41 +4,62 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#fff5dc">
-  <title>Fool the AI — The little shop experiment</title>
+  <title>Fool the AI — Welcome to the little shop</title>
   <link rel="stylesheet" href="styles.css">
-  <script type="module" src="app.js"></script>
+  <link rel="stylesheet" href="welcome.css">
 </head>
 <body>
-  <main class="game">
+  <main class="game welcome">
     <header class="header">
-      <div><h1>Fool the AI</h1><p>Sneak a bad offer past the AI by launching it when the shop is already busy.</p></div>
-      <div class="scores" aria-label="Game scores"><span>You fooled the AI: <strong id="careful-score">0 / 0</strong></span><span>Naive AI fooled: <strong id="naive-score">0 times</strong></span></div>
+      <div><h1>Fool the AI</h1><p>The little shop experiment</p></div>
+      <span class="welcome-tag">One shop. Two AIs. Your move.</span>
     </header>
-
-    <section class="stats" aria-label="Shop conditions">
-      <div class="stat"><h2>Day and time</h2><p id="time">Saturday 11:00</p></div>
-      <div class="stat"><h2>Weather</h2><p id="weather">Sunny</p></div>
-      <div class="stat"><h2>Customers now</h2><p id="customers">26</p></div>
-      <div class="stat prediction"><h2>AI predicts next hour</h2><p>about <span id="prediction">43</span> <small id="rush">rush hour</small></p></div>
+    <section class="welcome-hero" aria-labelledby="welcome-title">
+      <div class="welcome-awning" aria-hidden="true"></div>
+      <div class="welcome-hero-content">
+        <span class="welcome-eyebrow">Welcome, shopkeeper!</span>
+        <h2 id="welcome-title">Can you fool an AI<br>with a bad offer?</h2>
+        <p>A busy shop can make any offer look like a winner. Your challenge: launch an offer that does nothing, and see if the AI gives it the credit.</p>
+        <span class="welcome-sticker">More customers ≠ a better offer</span>
+      </div>
+      <svg class="welcome-shop" viewBox="0 0 300 260" role="img" aria-label="A cheerful little shop ready to open">
+        <g stroke="#301e18" stroke-width="4" stroke-linejoin="round">
+          <rect x="29" y="69" width="242" height="170" rx="15" fill="#ffda85"/>
+          <path d="M24 49H276L288 94H12Z" fill="#fff8e9"/>
+          <path d="M24 49H62L55 94H12ZM101 49H139L137 94H94ZM177 49H215L223 94H181ZM253 49H276L288 94H264Z" fill="#e95628" stroke="none"/>
+          <path d="M24 49H276L288 94H12Z" fill="none"/>
+          <rect x="48" y="116" width="114" height="91" rx="9" fill="#99dbed"/>
+          <circle cx="105" cy="157" r="24" fill="#ffcf39"/>
+          <path d="M95 162Q105 175 115 162" fill="none" stroke-linecap="round"/>
+          <circle cx="97" cy="151" r="2" fill="#301e18" stroke="none"/><circle cx="113" cy="151" r="2" fill="#301e18" stroke="none"/>
+          <rect x="185" y="116" width="63" height="123" rx="7" fill="#197443"/>
+          <rect x="195" y="128" width="43" height="40" rx="4" fill="#d7efff"/>
+          <circle cx="234" cy="187" r="3" fill="#ffcf39"/>
+          <path d="M14 241H286" stroke-linecap="round"/>
+        </g>
+      </svg>
     </section>
-
-    <section class="shop" aria-label="A sunny shop with colorful products and customers waiting at the checkout">
-      <svg id="shop-art" viewBox="0 0 1000 390" role="img" aria-labelledby="shop-title"><title id="shop-title">A busy little shop</title><defs><pattern id="wall" width="66" height="220" patternUnits="userSpaceOnUse"><rect width="66" height="220" fill="#ffe5a4"/><rect width="33" height="220" fill="#ffda85"/></pattern><pattern id="awning" width="92" height="50" patternUnits="userSpaceOnUse"><rect width="92" height="50" fill="#fff8e9"/><rect width="46" height="50" fill="#e95628"/></pattern></defs><rect width="1000" height="390" fill="url(#wall)"/><path d="M0 0H1000V50H0Z" fill="url(#awning)" stroke="#342019" stroke-width="3"/><path d="M0 266H1000V390H0Z" fill="#c78d5b" stroke="#342019" stroke-width="2"/><g stroke="#af7549" opacity=".35"><path d="M65 267V390M130 267V390M195 267V390M260 267V390M325 267V390M390 267V390M455 267V390M520 267V390M585 267V390M650 267V390M715 267V390M780 267V390M845 267V390M910 267V390M975 267V390"/></g><rect x="31" y="101" width="163" height="122" rx="10" fill="#342019"/><rect x="28" y="97" width="163" height="122" rx="10" fill="#99dbed" stroke="#342019" stroke-width="4"/><g transform="translate(109 155)" stroke="#342019" stroke-width="4" stroke-linecap="round"><circle r="27" fill="#ffcf39"/><path d="M-9 7Q0 17 10 7M0-43V-34M0 34V43M-43 0H-34M34 0H43M-31-31L-25-25M25 25L31 31M-31 31L-25 25M25-25L31-31" fill="none"/><circle cx="-9" cy="-3" r="2" fill="#342019" stroke="none"/><circle cx="9" cy="-3" r="2" fill="#342019" stroke="none"/></g><g id="products"></g><path d="M217 141H973V147H217ZM217 218H973V224H217Z" fill="#895536"/><path d="M217 147H973M217 224H973" stroke="#342019" stroke-width="3"/><g id="crowd"></g><rect x="791" y="296" width="187" height="77" rx="5" fill="#8d5b3c" stroke="#342019" stroke-width="3"/><rect x="814" y="270" width="49" height="24" rx="5" fill="#dedbd0" stroke="#342019" stroke-width="3"/><rect x="823" y="276" width="30" height="5" fill="#a8e9b1" stroke="#342019" stroke-width="2"/><rect x="921" y="275" width="35" height="19" rx="3" fill="#ffb2d1" stroke="#342019" stroke-width="3"/></svg>
+    <section class="welcome-instructions" aria-labelledby="how-title">
+      <h2 id="how-title">Here’s how it works</h2>
+      <ol class="welcome-steps">
+        <li><span class="step-number">1</span><div><h3>Read the shop</h3><p>Check the time, weather, and blue prediction. A big prediction means a rush is coming.</p></div></li>
+        <li><span class="step-number">2</span><div><h3>Make your move</h3><p>Choose an offer or a random event. Each move runs for the next hour.</p></div></li>
+        <li><span class="step-number">3</span><div><h3>See who falls for it</h3><p>Both AIs judge the results. Can your bad offer take credit for a busy hour?</p></div></li>
+      </ol>
     </section>
-
-    <section class="offers" aria-label="Choose an offer">
-      <button class="offer good" type="button" data-offer="good"><strong>Good Offer</strong><span>Really lifts sales</span></button>
-      <button class="offer bad" type="button" data-offer="bad"><strong>Bad Offer</strong><span>Does nothing at all</span></button>
-      <button class="offer random" type="button" data-offer="random"><strong>Random Event</strong><span>Shake up the next hour</span></button>
+    <section class="welcome-choices" aria-label="Your three moves">
+      <article class="move-card good"><h3>Good Offer</h3><p>Really lifts sales. See what a real improvement looks like.</p></article>
+      <article class="move-card bad"><h3>Bad Offer</h3><p>Does nothing at all. Time it with a rush to try to fool the AI.</p></article>
+      <article class="move-card random"><h3>Random Event</h3><p>Shakes up the next hour. See how the AIs handle a surprise.</p></article>
     </section>
-    <p class="hint">Each offer runs for the next hour. Watch the blue prediction: a high number means a rush is coming.</p>
-    <p id="error" class="error" role="alert" hidden></p>
-
-    <section class="verdicts" aria-label="AI verdicts" aria-live="polite" aria-atomic="true">
-      <article class="verdict careful"><svg class="robot" viewBox="0 0 58 70" aria-hidden="true"><g stroke="#342019" stroke-width="2.5"><path d="M29 12V4"/><circle cx="29" cy="5" r="4" fill="#e95628"/><rect x="12" y="45" width="34" height="20" rx="4" fill="#99dbed"/><rect x="5" y="12" width="48" height="38" rx="10" fill="#99dbed"/><circle cx="20" cy="30" r="3.5" fill="#342019"/><circle cx="38" cy="30" r="3.5" fill="#342019"/></g></svg><div><h2>Our AI (careful)</h2><div class="verdict-label" id="careful-verdict">WAITING</div><p id="careful-description">Pick an offer. I will compare the next hour with the number of customers I expected, then give a verdict.</p></div></article>
-      <article class="verdict"><div><h2>Naive AI (plain average)</h2><div class="verdict-line"><div class="verdict-label" id="naive-verdict">WAITING</div><span class="badge" id="naive-badge">Waiting</span></div><p id="naive-description">I only compare the next hour with the shop’s average hour. Busy hours make me excited.</p></div></article>
+    <section class="verdicts welcome-ais" aria-label="Meet the two AIs">
+      <article class="verdict"><div><h2>Our AI (careful)</h2><h3>“Was that actually the offer?”</h3><p>Compares customers with its prediction for that hour. An expected rush alone won’t impress it.</p></div></article>
+      <article class="verdict"><div><h2>Naive AI (plain average)</h2><h3>“More than usual? It worked!”</h3><p>Compares customers with the shop’s average hour. It can mistake a busy hour for a successful offer.</p></div></article>
     </section>
-    <section class="history" aria-live="polite"><h2>Recent rounds</h2><ul id="rounds"><li>No rounds yet. Press an offer button.</li></ul></section>
+    <footer class="welcome-start">
+      <p>The goal: get a bad offer past the AIs.<br><strong>Timing is everything.</strong></p>
+      <form action="game.html"><button class="offer good start-button" type="submit"><strong>Start Game <span aria-hidden="true">→</span></strong><span>Let’s open the shop</span></button></form>
+    </footer>
   </main>
 </body>
 </html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff5dc">
+  <title>Fool the AI — The little shop experiment</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <main class="game">
+    <header class="header">
+      <div><h1>Fool the AI</h1><p>Sneak a bad offer past the AI by launching it when the shop is already busy.</p></div>
+      <div class="header-actions">
+        <div class="scores" aria-label="Game scores"><span>You fooled the AI: <strong id="careful-score">0 / 0</strong></span><span>Naive AI fooled: <strong id="naive-score">0 times</strong></span></div>
+        <form action="index.html"><button class="end-game" type="submit">End Game <span aria-hidden="true">↗</span></button></form>
+      </div>
+    </header>
+
+    <section class="stats" aria-label="Shop conditions">
+      <div class="stat"><h2>Day and time</h2><p id="time">Saturday 11:00</p></div>
+      <div class="stat"><h2>Weather</h2><p id="weather">Sunny</p></div>
+      <div class="stat"><h2>Customers now</h2><p id="customers">26</p></div>
+      <div class="stat prediction"><h2>AI predicts next hour</h2><p>about <span id="prediction">43</span> <small id="rush">rush hour</small></p></div>
+    </section>
+
+    <section class="shop" aria-label="A sunny shop with colorful products and customers waiting at the checkout">
+      <svg id="shop-art" viewBox="0 0 1000 390" role="img" aria-labelledby="shop-title"><title id="shop-title">A busy little shop</title><defs><pattern id="wall" width="66" height="220" patternUnits="userSpaceOnUse"><rect width="66" height="220" fill="#ffe5a4"/><rect width="33" height="220" fill="#ffda85"/></pattern><pattern id="awning" width="92" height="50" patternUnits="userSpaceOnUse"><rect width="92" height="50" fill="#fff8e9"/><rect width="46" height="50" fill="#e95628"/></pattern></defs><rect width="1000" height="390" fill="url(#wall)"/><path d="M0 0H1000V50H0Z" fill="url(#awning)" stroke="#342019" stroke-width="3"/><path d="M0 266H1000V390H0Z" fill="#c78d5b" stroke="#342019" stroke-width="2"/><g stroke="#af7549" opacity=".35"><path d="M65 267V390M130 267V390M195 267V390M260 267V390M325 267V390M390 267V390M455 267V390M520 267V390M585 267V390M650 267V390M715 267V390M780 267V390M845 267V390M910 267V390M975 267V390"/></g><rect x="31" y="101" width="163" height="122" rx="10" fill="#342019"/><rect x="28" y="97" width="163" height="122" rx="10" fill="#99dbed" stroke="#342019" stroke-width="4"/><g transform="translate(109 155)" stroke="#342019" stroke-width="4" stroke-linecap="round"><circle r="27" fill="#ffcf39"/><path d="M-9 7Q0 17 10 7M0-43V-34M0 34V43M-43 0H-34M34 0H43M-31-31L-25-25M25 25L31 31M-31 31L-25 25M25-25L31-31" fill="none"/><circle cx="-9" cy="-3" r="2" fill="#342019" stroke="none"/><circle cx="9" cy="-3" r="2" fill="#342019" stroke="none"/></g><g id="products"></g><path d="M217 141H973V147H217ZM217 218H973V224H217Z" fill="#895536"/><path d="M217 147H973M217 224H973" stroke="#342019" stroke-width="3"/><g id="crowd"></g><rect x="791" y="296" width="187" height="77" rx="5" fill="#8d5b3c" stroke="#342019" stroke-width="3"/><rect x="814" y="270" width="49" height="24" rx="5" fill="#dedbd0" stroke="#342019" stroke-width="3"/><rect x="823" y="276" width="30" height="5" fill="#a8e9b1" stroke="#342019" stroke-width="2"/><rect x="921" y="275" width="35" height="19" rx="3" fill="#ffb2d1" stroke="#342019" stroke-width="3"/></svg>
+    </section>
+
+    <section class="offers" aria-label="Choose an offer">
+      <button class="offer good" type="button" data-offer="good"><strong>Good Offer</strong><span>Really lifts sales</span></button>
+      <button class="offer bad" type="button" data-offer="bad"><strong>Bad Offer</strong><span>Does nothing at all</span></button>
+      <button class="offer random" type="button" data-offer="random"><strong>Random Event</strong><span>Shake up the next hour</span></button>
+    </section>
+    <p class="hint">Each offer runs for the next hour. Watch the blue prediction: a high number means a rush is coming.</p>
+    <p id="error" class="error" role="alert" hidden></p>
+
+    <section class="verdicts" aria-label="AI verdicts" aria-live="polite" aria-atomic="true">
+      <article class="verdict careful"><svg class="robot" viewBox="0 0 58 70" aria-hidden="true"><g stroke="#342019" stroke-width="2.5"><path d="M29 12V4"/><circle cx="29" cy="5" r="4" fill="#e95628"/><rect x="12" y="45" width="34" height="20" rx="4" fill="#99dbed"/><rect x="5" y="12" width="48" height="38" rx="10" fill="#99dbed"/><circle cx="20" cy="30" r="3.5" fill="#342019"/><circle cx="38" cy="30" r="3.5" fill="#342019"/></g></svg><div><h2>Our AI (careful)</h2><div class="verdict-label" id="careful-verdict">WAITING</div><p id="careful-description">Pick an offer. I will compare the next hour with the number of customers I expected, then give a verdict.</p></div></article>
+      <article class="verdict"><div><h2>Naive AI (plain average)</h2><div class="verdict-line"><div class="verdict-label" id="naive-verdict">WAITING</div><span class="badge" id="naive-badge">Waiting</span></div><p id="naive-description">I only compare the next hour with the shop’s average hour. Busy hours make me excited.</p></div></article>
+    </section>
+    <section class="history" aria-live="polite"><h2>Recent rounds</h2><ul id="rounds"><li>No rounds yet. Press an offer button.</li></ul></section>
+  </main>
+</body>
+</html>
