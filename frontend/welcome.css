@@ -1,0 +1,39 @@
+.welcome{padding-bottom:30px}
+.welcome-tag{font-size:12px;font-weight:900;border:2px solid #301e18;background:#fff;border-radius:25px;padding:8px 14px}
+.welcome-hero{position:relative;display:flex;align-items:center;overflow:hidden;background:#ffe5a4;border:3px solid #301e18;border-radius:24px;box-shadow:3px 3px 0 #301e18;padding:70px 32px 28px;gap:20px}
+.welcome-awning{position:absolute;top:0;left:0;right:0;height:39px;background:repeating-linear-gradient(90deg,#e95628 0 45px,#fff8e9 45px 90px);border-bottom:3px solid #301e18}
+.welcome-hero-content{flex:1}
+.welcome-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:900}
+.welcome-hero h2{font-family:'Fredoka',sans-serif;font-size:clamp(30px,4.2vw,46px);line-height:1.08;text-transform:none;letter-spacing:-.6px;margin:10px 0 15px}
+.welcome-hero p{font-size:14px;line-height:1.65;max-width:460px;margin:0 0 20px}
+.welcome-sticker{display:inline-block;padding:7px 12px;border:2px solid #301e18;border-radius:10px;background:#d7efff;font-size:12px;font-weight:900;transform:rotate(-2deg)}
+.welcome-shop{width:31%;max-width:290px;flex-shrink:0}
+.welcome-instructions{margin-top:27px}
+.welcome-instructions>h2{font-family:'Fredoka',sans-serif;font-size:24px;text-transform:none;letter-spacing:0;margin-bottom:15px}
+.welcome-steps{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0;margin:0 0 22px}
+.welcome-steps li{display:flex;align-items:flex-start;gap:10px}
+.step-number{display:grid;place-items:center;flex-shrink:0;width:29px;height:29px;background:#ffcf39;border:2px solid #301e18;border-radius:50%;font-family:'Fredoka',sans-serif;font-size:17px}
+.welcome h3{font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;line-height:1.25;margin:2px 0 6px}
+.welcome-steps p,.move-card p{font-size:12px;line-height:1.6;margin:0}
+.welcome-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:21px}
+.move-card{border:2px solid #301e18;border-radius:17px;box-shadow:3px 3px 0 #301e18;color:#fff;padding:15px 17px}
+.move-card h3{font-size:21px}
+.welcome-ais .verdict:first-child{background:#edf8ff}
+.welcome-ais h3{font-size:20px}
+.welcome-start{display:flex;align-items:center;justify-content:space-between;gap:20px;background:#301e18;color:#fff5dc;border-radius:19px;padding:20px 24px;margin-top:22px}
+.welcome-start p{font-size:13px;line-height:1.7;margin:0}
+.welcome-start strong{font-family:'Fredoka',sans-serif;font-size:20px}
+.welcome-start form{margin:0}
+.start-button{min-width:225px;border-color:#fff5dc;box-shadow:3px 3px 0 #100b08}
+.start-button strong span{display:inline;font-size:22px;margin-left:12px}
+@media(max-width:700px){
+  .welcome-hero{padding:60px 20px 25px}
+  .welcome-shop{width:29%}
+  .welcome-steps{grid-template-columns:1fr;gap:16px}
+  .welcome-choices{grid-template-columns:1fr;gap:12px}
+  .welcome-start{flex-direction:column;align-items:stretch;text-align:center}
+  .start-button{width:100%}
+  .welcome-tag{font-size:11px}
+  .welcome-hero p{font-size:13px}
+}
+@media(max-width:450px){.welcome-shop{display:none}.welcome-hero h2{font-size:34px}}

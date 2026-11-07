@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff5dc">
+  <title>Fool the AI — Welcome to the little shop</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <main class="game welcome">
+    <header class="header">
+      <div><h1>Fool the AI</h1><p>The little shop experiment</p></div>
+      <span class="welcome-tag">One shop. Two AIs. Your move.</span>
+    </header>
+    <section class="welcome-hero" aria-labelledby="welcome-title">
+      <div class="welcome-awning" aria-hidden="true"></div>
+      <div class="welcome-hero-content">
+        <span class="welcome-eyebrow">Welcome, shopkeeper!</span>
+        <h2 id="welcome-title">Can you fool an AI<br>with a bad offer?</h2>
+        <p>A busy shop can make any offer look like a winner. Your challenge: launch an offer that does nothing, and see if the AI gives it the credit.</p>
+        <span class="welcome-sticker">More customers ≠ a better offer</span>
+      </div>
+      <svg class="welcome-shop" viewBox="0 0 300 260" role="img" aria-label="A cheerful little shop ready to open">
+        <g stroke="#301e18" stroke-width="4" stroke-linejoin="round">
+          <rect x="29" y="69" width="242" height="170" rx="15" fill="#ffda85"/>
+          <path d="M24 49H276L288 94H12Z" fill="#fff8e9"/>
+          <path d="M24 49H62L55 94H12ZM101 49H139L137 94H94ZM177 49H215L223 94H181ZM253 49H276L288 94H264Z" fill="#e95628" stroke="none"/>
+          <path d="M24 49H276L288 94H12Z" fill="none"/>
+          <rect x="48" y="116" width="114" height="91" rx="9" fill="#99dbed"/>
+          <circle cx="105" cy="157" r="24" fill="#ffcf39"/>
+          <path d="M95 162Q105 175 115 162" fill="none" stroke-linecap="round"/>
+          <circle cx="97" cy="151" r="2" fill="#301e18" stroke="none"/><circle cx="113" cy="151" r="2" fill="#301e18" stroke="none"/>
+          <rect x="185" y="116" width="63" height="123" rx="7" fill="#197443"/>
+          <rect x="195" y="128" width="43" height="40" rx="4" fill="#d7efff"/>
+          <circle cx="234" cy="187" r="3" fill="#ffcf39"/>
+          <path d="M14 241H286" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </section>
+    <section class="welcome-instructions" aria-labelledby="how-title">
+      <h2 id="how-title">Here’s how it works</h2>
+      <ol class="welcome-steps">
+        <li><span class="step-number">1</span><div><h3>Read the shop</h3><p>Check the time, weather, and blue prediction. A big prediction means a rush is coming.</p></div></li>
+        <li><span class="step-number">2</span><div><h3>Make your move</h3><p>Choose an offer or a random event. Each move runs for the next hour.</p></div></li>
+        <li><span class="step-number">3</span><div><h3>See who falls for it</h3><p>Both AIs judge the results. Can your bad offer take credit for a busy hour?</p></div></li>
+      </ol>
+    </section>
+    <section class="welcome-choices" aria-label="Your three moves">
+      <article class="move-card good"><h3>Good Offer</h3><p>Really lifts sales. See what a real improvement looks like.</p></article>
+      <article class="move-card bad"><h3>Bad Offer</h3><p>Does nothing at all. Time it with a rush to try to fool the AI.</p></article>
+      <article class="move-card random"><h3>Random Event</h3><p>Shakes up the next hour. See how the AIs handle a surprise.</p></article>
+    </section>
+    <section class="verdicts welcome-ais" aria-label="Meet the two AIs">
+      <article class="verdict"><div><h2>Our AI (careful)</h2><h3>“Was that actually the offer?”</h3><p>Compares customers with its prediction for that hour. An expected rush alone won’t impress it.</p></div></article>
+      <article class="verdict"><div><h2>Naive AI (plain average)</h2><h3>“More than usual? It worked!”</h3><p>Compares customers with the shop’s average hour. It can mistake a busy hour for a successful offer.</p></div></article>
+    </section>
+    <footer class="welcome-start">
+      <p>The goal: get a bad offer past the AIs.<br><strong>Timing is everything.</strong></p>
+      <form action="game.html"><button class="offer good start-button" type="submit"><strong>Start Game <span aria-hidden="true">→</span></strong><span>Let’s open the shop</span></button></form>
+    </footer>
+  </main>
+</body>
+</html>
