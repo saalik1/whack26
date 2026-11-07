@@ -22,8 +22,8 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from game import Game
-from simulator2 import EVENTS, Shop
+from backend.game import Game
+from backend.simulator2 import EVENTS, Shop
 
 app = FastAPI(title="Fool the AI - shop simulator")
 

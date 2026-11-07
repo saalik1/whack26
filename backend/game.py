@@ -7,8 +7,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from agents import CarefulAgent, naive_agent
-from simulator2 import RUSH_THRESHOLD, Shop
+from .agents import CarefulAgent, naive_agent
+from .simulator2 import RUSH_THRESHOLD, Shop
 
 # The real lift of a Good Offer in the LIVE game.
 # The brief's example is +8%, which takes ~35 offers to confirm. 20% lets the careful AI

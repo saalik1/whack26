@@ -20,7 +20,7 @@ import math
 from dataclasses import dataclass
 from typing import Dict, List
 
-from simulator2 import EVENT_MULT_BY_LABEL, WEEKDAYS, HourRecord, expected_customers
+from .simulator2 import EVENT_MULT_BY_LABEL, WEEKDAYS, HourRecord, expected_customers
 
 # Naive AI: "worked" if the hour beats the running average by 20%.
 NAIVE_LIFT_NEEDED = 0.20
