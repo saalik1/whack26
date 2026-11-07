@@ -13,7 +13,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from simulator2 import EVENTS, Shop
+from whack26.backend.simulator2 import EVENTS, Shop
 
 app = FastAPI(title="Fool the AI - shop simulator")
 

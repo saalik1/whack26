@@ -11,8 +11,8 @@ import argparse
 import numpy as np
 import pandas as pd
 
-from defender import naive_researcher, popper_researcher
-from simulator import CHEATS, CHEAT_TARGET, simulate
+from whack26.backend.defender import naive_researcher, popper_researcher
+from whack26.backend.simulator import CHEATS, CHEAT_TARGET, simulate
 
 
 def score(result, truth, cheat):
