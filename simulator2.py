@@ -58,6 +58,7 @@ EVENTS = {
     "heavy_rain":  {"label": "Heavy rain",          "mult": 0.9, "hours": 2, "force_weather": "Rainy"},
 }
 SPONTANEOUS_EVENT_CHANCE = 0.03   # per hour, when no event is running
+EVENT_MULT_BY_LABEL = {spec["label"]: spec["mult"] for spec in EVENTS.values()}
 
 AVG_BASKET = 6.50   # average spend per customer (GBP)
 BASKET_SD = 2.50
@@ -266,13 +267,33 @@ class Shop:
         self.history.append(record)
         self.step_count += 1
 
-        # 5. Events tick down, clock moves on.
+        # 5. Events tick down, clock moves on. A surprise event is visible to everyone
+        #    once it has happened, so later forecasts include it.
         if self.active_event:
             self.active_event["hours_left"] -= 1
+            self.active_event["known"] = True
             if self.active_event["hours_left"] <= 0:
                 self.active_event = None
         self._advance_clock()
         return record
+
+    # ---- frontend helpers ------------------------------------------------- #
+
+    @classmethod
+    def new_game(cls, seed: Optional[int] = None, **kwargs) -> "Shop":
+        """A shop that has already played its opening hour (Saturday 11:00, no offer),
+        so the screen starts with a real 'customers now' number and a forecast."""
+        shop = cls(seed=seed, **kwargs)
+        shop.step("none")
+        return shop
+
+    def play_round(self, offer: str) -> HourRecord:
+        """One button press from the screen: 'good', 'bad' or 'random'.
+        'random' = no offer, but a random event hits the shop for this hour."""
+        if offer == "random":
+            self.trigger_event("random")
+            return self.step("none")
+        return self.step(offer)
 
     # ---- views ------------------------------------------------------------ #
 

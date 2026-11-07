@@ -1,23 +1,76 @@
 """
-api.py - FastAPI layer over simulator2.py.
+api.py - FastAPI layer over simulator2.py, agents.py and game.py.
 
-Run:  uvicorn api:app --reload      then open http://localhost:8000/docs
+Run:  uvicorn api:app --reload
+Play: http://localhost:8000          (serves the frontend in static/)
+Docs: http://localhost:8000/docs     (try every endpoint by hand)
 
-The browser only sends the player's choice for the next hour and draws what comes back.
-All the simulation (and later the AI agents) stay in Python.
+The browser only sends the player's choice and draws what comes back.
+The simulation, the two AIs and the scoring all stay in Python.
+
+Two groups of endpoints:
+  /api/start, /api/round   what the frontend uses. One game per browser (cookie),
+                           so several judges can play at the same time.
+  /api/new_game, /api/step, /api/event, /api/state, /api/history
+                           raw simulator access for testing and for the evidence runs.
 """
+import uuid
 from pathlib import Path
 from typing import Dict, Literal, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from game import Game
 from simulator2 import EVENTS, Shop
 
 app = FastAPI(title="Fool the AI - shop simulator")
 
-GAMES: Dict[str, Shop] = {}   # in-memory games, fine for a hackathon
+# --------------------------------------------------------------------------- #
+# Frontend endpoints: one Game per browser, kept in memory (fine for a hackathon)
+# --------------------------------------------------------------------------- #
+
+SESSIONS: Dict[str, Game] = {}
+MAX_SESSIONS = 500
+COOKIE = "shop_session"
+
+
+def new_session(response: Response) -> Game:
+    while len(SESSIONS) >= MAX_SESSIONS:          # forget the oldest player
+        SESSIONS.pop(next(iter(SESSIONS)))
+    sid = uuid.uuid4().hex
+    SESSIONS[sid] = Game()
+    response.set_cookie(COOKIE, sid, httponly=True, samesite="lax", max_age=6 * 3600)
+    return SESSIONS[sid]
+
+
+class RoundRequest(BaseModel):
+    offer: Literal["good", "bad", "random"]
+    state: Optional[dict] = None     # the frontend's own copy; the server does not trust it
+
+
+@app.post("/api/start")
+def start(response: Response):
+    """Called when the page loads: a fresh shop and the numbers for the first screen."""
+    return new_session(response).start_payload()
+
+
+@app.post("/api/round")
+def play_round(body: RoundRequest, request: Request, response: Response):
+    """One button press: good, bad or random. Simulates the next hour and judges it."""
+    game = SESSIONS.get(request.cookies.get(COOKIE, ""))
+    just_started = (body.state or {}).get("round") == 0
+    if game is None or (just_started and game.rounds > 0):   # no game yet, or page was reloaded
+        game = new_session(response)
+    return game.play(body.offer)
+
+
+# --------------------------------------------------------------------------- #
+# Raw simulator endpoints (no AI verdicts)
+# --------------------------------------------------------------------------- #
+
+GAMES: Dict[str, Shop] = {}
 
 
 class NewGame(BaseModel):
@@ -28,8 +81,7 @@ class NewGame(BaseModel):
 class StepRequest(BaseModel):
     game_id: str = "demo"
     action: Literal["good", "bad", "none"] = "none"
-    # "random", one of the event keys, or null for no event
-    event: Optional[str] = None
+    event: Optional[str] = None      # "random", an event key, or null
 
 
 class EventRequest(BaseModel):
@@ -85,7 +137,10 @@ def list_events():
     return {key: spec["label"] for key, spec in EVENTS.items()}
 
 
-# Serve the shop screen once static/index.html exists.
-STATIC = Path(__file__).parent / "static"
+# --------------------------------------------------------------------------- #
+# Serve the shop screen (static/index.html). Must stay LAST so it never hides /api.
+# --------------------------------------------------------------------------- #
+
+STATIC = Path(__file__).parent / "frontend"
 if STATIC.is_dir():
     app.mount("/", StaticFiles(directory=STATIC, html=True), name="static")
