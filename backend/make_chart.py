@@ -9,6 +9,7 @@ Right panel: how often our AI still finds the real effect (higher is better).
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.ticker  # noqa: F401
 import pandas as pd
 from pathlib import Path
 
@@ -76,3 +77,73 @@ fig.text(0.035, 0.02, f"{n_games:,} simulated shop games ({len(res)} cheats x 20
 fig.subplots_adjust(left=0.17, right=0.98, top=0.84, bottom=0.1)
 fig.savefig(HERE.parent / "frontend" / "evidence.png", dpi=150, facecolor=SURFACE)
 print("saved frontend/evidence.png")
+
+
+# --------------------------------------------------------------------------- #
+# Live game AI: peeking + rush-hour cheat  -> frontend/evidence_game.png
+# --------------------------------------------------------------------------- #
+import json  # noqa: E402
+import math  # noqa: E402
+
+game_file = HERE / "results_game.json"
+if game_file.exists():
+    g = json.loads(game_file.read_text())
+    peek, cheat = g["peeking"], g["rush_hour_cheat"]["20pct"]
+    hours = peek["hours"]
+    p_line = [v * 100 for v in peek["pvalue_every_round"]]
+    e_line = [v * 100 for v in peek["evalue_every_round"]]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 9), facecolor=SURFACE,
+                                   gridspec_kw={"width_ratios": [2.1, 1], "wspace": 0.22})
+    for ax in (ax1, ax2):
+        ax.set_facecolor(SURFACE)
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+        ax.spines["left"].set_color(GRID)
+        ax.spines["bottom"].set_color(GRID)
+        ax.yaxis.grid(True, color=GRID, linewidth=1)
+        ax.set_axisbelow(True)
+
+    # left: chance of ever being fooled vs number of checks
+    ax1.plot(hours, p_line, color=NAIVE, linewidth=2.5, label="Ordinary p-value, checked every round")
+    ax1.plot(hours, e_line, color=OURS, linewidth=2.5, label="E-values, checked every round (our AI)")
+    budget = peek["budget"] * 100
+    ax1.axhline(budget, color=INK_2, linewidth=1.2, linestyle=(0, (4, 4)))
+    ax1.text(hours[-1], budget + 0.5, f"error budget {budget:.1f}%", ha="right", va="bottom", fontsize=13, color=INK_2)
+    ax1.text(hours[-1] + 1, p_line[-1], f"{p_line[-1]:.0f}%", va="center", fontsize=15, color=INK, fontweight="bold")
+    ax1.text(hours[-1] + 1, e_line[-1], f"{e_line[-1]:.1f}%", va="center", fontsize=15, color=INK, fontweight="bold")
+    ax1.set_xlim(0, hours[-1] + 8)
+    top = 5 * math.ceil(max(p_line) * 1.15 / 5)
+    ax1.set_ylim(0, top)
+    ax1.set_yticks(range(0, top + 1, 5))
+    ax1.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:.0f}%"))
+    ax1.set_xlabel("Rounds played (the AI checks after every one)", fontsize=14)
+    ax1.set_title("Chance of EVER calling a useless offer real\n(lower is better)",
+                  loc="left", fontsize=16, color=INK, pad=14)
+    ax1.legend(loc="upper left", frameon=False, fontsize=14)
+
+    # right: the rush-hour cheat in the real game loop
+    vals = [cheat["naive_ever_fooled"] * 100, cheat["careful_ever_fooled"] * 100]
+    ax2.bar([0, 1], [max(v, 0.6) for v in vals], width=0.6, color=[NAIVE, OURS])
+    ax2.set_xticks([0, 1])
+    ax2.set_xticklabels(["Naive AI", "Our AI"], fontsize=15, color=INK)
+    for x, v in zip([0, 1], vals):
+        ax2.text(x, max(v, 0.6) + 2, f"{v:.0f}%" if v >= 10 else f"{v:.1f}%",
+                 ha="center", fontsize=16, color=INK, fontweight="bold")
+    ax2.set_ylim(0, 112)
+    ax2.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:.0f}%"))
+    ax2.set_title("Live game: fooled by a bad offer\nlaunched in rush hours",
+                  loc="left", fontsize=16, color=INK, pad=14)
+    ax2.text(0.5, -0.17, f"Our AI still confirms the good offer in {cheat['good_confirmed']:.0%} of games\n"
+             f"(median {cheat['good_median_round']:.0f} rounds)", transform=ax2.transAxes,
+             ha="center", fontsize=13, color=INK_2)
+
+    fig.suptitle(f"Checking after every round fools an ordinary p-value {p_line[-1]:.0f}% of the time. "
+                 f"Our e-values: {e_line[-1]:.1f}%.", x=0.035, ha="left", fontsize=20,
+                 fontweight="bold", color=INK, y=0.975)
+    fig.text(0.035, 0.02, f"Same careful AI, same learned baseline; only the decision rule differs. "
+             f"{peek['games']:,} games for the left panel, {g['rush_hour_cheat']['20pct']['games']} for the right, "
+             "all fresh games never used for tuning.", fontsize=12, color=INK_2)
+    fig.subplots_adjust(left=0.06, right=0.98, top=0.83, bottom=0.17)
+    fig.savefig(HERE.parent / "frontend" / "evidence_game.png", dpi=150, facecolor=SURFACE)
+    print("saved frontend/evidence_game.png")

@@ -15,8 +15,8 @@ evidence across rounds with **e-values**, so checking after every click can't fo
 Tick *Fast-forward* to run each offer for 12 hours.
 
 ## The evidence
-`frontend/evidence.png` (also the **The evidence** button in the game): 1,200 simulated shops,
-6 cheats, all on fresh games never used for tuning.
+The **The evidence** button in the game opens `frontend/evidence.html`. Chart 1 (`frontend/evidence.png`):
+1,200 simulated shops, 6 cheats, all on fresh games never used for tuning.
 
 | Cheat | Naive AI fooled | Our AI fooled | Our AI finds the real effect |
 |---|---|---|---|
@@ -27,12 +27,18 @@ Tick *Fast-forward* to run each offer for 12 hours.
 | Riding a sales trend | 52% | 0% | 96% |
 | Stopping early | 24% | 0.5% | 82% |
 
-Live game AI (600 games of the rush-hour cheat): naive fooled in **100%** of games, ours in **0.3%**.
+**Live game AI** (`frontend/evidence_game.png`, fresh games):
+- Checking after every round (the "stop when it looks good" trap): an ordinary p-value is eventually
+  fooled by a useless offer **19%** of the time over 100 rounds; our e-values **1.7%** (budget 2.5%).
+  Same AI, same learned baseline; only the decision rule differs. (1,000 games)
+- Bad offer launched in rush hours: naive AI fooled in **100%** of games, ours in **0.7%**; ours still
+  confirms the good offer in 90% of games (median 27 rounds). (300 games)
 
 Reproduce it yourself (fixed seeds, same numbers every time):
 ```
 python -m backend.benchmark --cheat all --games 200   # ~7 min, writes backend/results.csv
-python -m backend.make_chart                          # redraws frontend/evidence.png
+python -m backend.evidence_game                       # ~1 min, writes backend/results_game.json
+python -m backend.make_chart                          # redraws both evidence charts
 ```
 
 ## How our AI works
@@ -50,7 +56,8 @@ everything is tested on simulated shops, where the truth is known. Real data is 
 ## Files
 - `api.py`: FastAPI server for the game
 - `backend/`: `simulator2.py` (hourly shop), `agents.py` (the two live AIs), `game.py` (scoring),
-  `simulator.py`, `defender.py`, `benchmark.py`, `make_chart.py` (daily engine and evidence)
+  `simulator.py`, `defender.py`, `benchmark.py` (daily engine), `evidence_game.py` (live AI evidence),
+  `make_chart.py` (both charts)
 - `frontend/`: the game screen
 
 Built on numpy, pandas, scipy, statsmodels, FastAPI. Method inspired by POPPER (ICML 2025).

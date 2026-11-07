@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fool the AI: the evidence</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .evidence-page h1{margin-bottom:6px}
+    .evidence-page .lead{font-size:15px;margin:0 0 18px;max-width:820px}
+    .figure{background:#fff;border:3px solid #301e18;border-radius:22px;box-shadow:3px 3px 0 #301e18;padding:14px;margin:0 0 18px}
+    .figure h2{font-size:12px;margin:0 0 8px}
+    .figure img{display:block;width:100%;height:auto;border-radius:10px}
+    .figure p{font-size:13px;margin:10px 4px 2px}
+    .back{display:inline-block;margin-bottom:14px}
+  </style>
+</head>
+<body>
+  <main class="game evidence-page">
+    <a class="evidence-link back" href="game.html">&larr; Back to the game</a>
+    <h1>The evidence</h1>
+    <p class="lead">One game is an anecdote. These are thousands of simulated shops where we planted the truth,
+      tested on fresh games never used to tune anything. Code and commands to reproduce every number are in the repo README.</p>
+
+    <section class="figure">
+      <h2>1. Six ways to cheat, 1,200 shops</h2>
+      <img src="evidence.png" alt="Bar chart: the naive AI is fooled 24 to 100 percent of the time across six cheats; ours 0 to 7 percent, while still finding the real effect 82 to 98 percent of the time.">
+      <p>Naive AI fooled 24&ndash;100% of the time; ours 0&ndash;7%, while still finding the real effect 82&ndash;98% of the time.</p>
+    </section>
+
+    <section class="figure">
+      <h2>2. The live game AI: why checking every round can't fool it</h2>
+      <img src="evidence_game.png" alt="Line chart: an ordinary p-value checked after every round is eventually fooled 19 percent of the time; our e-values stay at 1.7 percent, under the 2.5 percent budget. Bar chart: in the live game the naive AI is fooled by rush-hour bad offers in 100 percent of games, ours in 0.7 percent.">
+      <p>Same AI, only the decision rule differs: an ordinary p-value checked every round is fooled 19% of the time; our e-values 1.7%.
+        In the live game, a bad offer launched in rush hours fools the naive AI in every game and ours in 0.7%.</p>
+    </section>
+  </main>
+</body>
+</html>
