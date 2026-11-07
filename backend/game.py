@@ -15,12 +15,17 @@ from .simulator2 import RUSH_THRESHOLD, Shop
 # reach a verdict within about six Good Offers, which suits a live demo.
 # Set to 0.08 to match the brief exactly (e.g. for the 1,000-game evidence runs).
 LIVE_GOOD_EFFECT = 0.20
+PAST_HOURS = 56 * 12          # 8 weeks x 12 opening hours of past sales
 
 
 class Game:
     def __init__(self, seed: Optional[int] = None, good_effect: float = LIVE_GOOD_EFFECT):
-        self.shop = Shop.new_game(seed=seed, good_effect=good_effect)
-        self.careful = CarefulAgent()
+        # The shop's last 8 weeks of ordinary trading (no offers). The careful AI learns
+        # what a normal hour looks like from these records, like a real shop owner would.
+        self.shop = Shop(seed=seed, good_effect=good_effect)
+        self.shop.run(PAST_HOURS)
+        self.shop.step("none")                    # the opening hour shown on screen
+        self.careful = CarefulAgent(self.shop.history)
         self.rounds = 0
         self.careful_fooled = 0
         self.naive_fooled = 0
@@ -51,7 +56,12 @@ class Game:
 
     # ---- one button press -------------------------------------------------- #
 
-    def play(self, offer: str) -> dict:
+    def play(self, offer: str, hours: int = 1) -> dict:
+        """One button press. hours > 1 fast-forwards: the same offer runs for that many
+        hours, the careful AI builds up evidence from all of them, and the screen shows
+        the last hour. One hour per click is too little data to judge an offer on."""
+        for _ in range(max(0, min(hours, 84) - 1)):
+            self.careful.judge(self.shop.play_round(offer))
         past = list(self.shop.history)           # hours before this one
         record = self.shop.play_round(offer)
         naive = naive_agent(record, past)

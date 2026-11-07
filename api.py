@@ -47,6 +47,7 @@ def new_session(response: Response) -> Game:
 
 class RoundRequest(BaseModel):
     offer: Literal["good", "bad", "random"]
+    hours: int = 1                   # >1 = fast-forward that many hours with the same offer (max 84)
     state: Optional[dict] = None     # the frontend's own copy; the server does not trust it
 
 
@@ -63,7 +64,7 @@ def play_round(body: RoundRequest, request: Request, response: Response):
     just_started = (body.state or {}).get("round") == 0
     if game is None or (just_started and game.rounds > 0):   # no game yet, or page was reloaded
         game = new_session(response)
-    return game.play(body.offer)
+    return game.play(body.offer, body.hours)
 
 
 # --------------------------------------------------------------------------- #
