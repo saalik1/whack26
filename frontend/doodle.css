@@ -246,3 +246,30 @@ a{color:inherit}
 .clock-state[data-state="pause"]{background:#ffe0d3}
 .clock-msg{margin:8px 0;padding:10px 14px;border:2.5px solid #c83e08;border-radius:12px;background:#fff1ec;font-weight:800;font-size:13px}
 .clock-msg[hidden]{display:none}
+
+/* ---- clock buttons (redesign) ---- */
+.clock{gap:8px;padding:6px 8px;border:3px solid #2b2420;border-radius:18px;background:#fff8e9;box-shadow:3px 3px 0 #2b2420}
+.clock-btn{display:inline-flex;align-items:center;gap:6px;border:2.5px solid #2b2420;border-radius:12px;background:#fff;color:#2b2420;padding:7px 14px;font-weight:900;font-size:14px;line-height:1;box-shadow:0 3px 0 #2b2420;transition:transform .12s,box-shadow .12s,background .12s}
+.clock-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 0 #2b2420}
+.clock-btn:active:not(:disabled){transform:translateY(3px);box-shadow:none}
+.clock-btn[data-speed="pause"][aria-pressed="true"]{background:#ffb199}
+.clock-btn[data-speed="play"][aria-pressed="true"]{background:#8fdcae}
+.clock-btn[data-speed="double"][aria-pressed="true"]{background:#ffd84d}
+.clock-btn[aria-pressed="true"]{transform:translateY(3px);box-shadow:none}
+.clock-btn:focus-visible{outline:3px solid #2586d8;outline-offset:3px}
+.clock-state{font-size:12px;letter-spacing:.4px}
+.speed-note{display:none}
+@media(min-width:1100px){.speed-note{display:inline;opacity:.75}}
+
+/* ---- event / verdict panel, centred, above the activity list ---- */
+.popup-overlay{display:none!important}
+.popup-panel{margin:20px auto 0;max-width:760px;padding:24px 28px;text-align:center;background:#fffdf4;border:3px solid #2b2420;border-radius:22px;box-shadow:4px 4px 0 #2b2420}
+.popup-panel[hidden]{display:none}
+.popup-panel h2{font-size:22px;margin:0 0 12px;letter-spacing:0;text-transform:none}
+.popup-panel p{margin:8px auto;max-width:600px;line-height:1.5}
+.popup-panel .popup-ais{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;text-align:center}
+.popup-panel .popup-ai{padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.popup-panel .popup-ai p{margin:4px 0 0;font-size:14px}
+.popup-panel .popup-btn{width:auto;min-width:260px;margin:14px auto 0}
+.history{margin-top:20px}
+@media(max-width:700px){.popup-panel{padding:18px 14px}.popup-panel .popup-ais{grid-template-columns:1fr}}

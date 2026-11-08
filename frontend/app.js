@@ -235,7 +235,7 @@ function openPopup(popup) {
     body.append(el('p', '', popup.text));
   }
   $('popup').hidden = false;
-  $('popup-close').focus();
+  $('popup').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 function closePopup() {
   if (!popupOpen) return;

@@ -146,15 +146,14 @@
         </div>
       </div>
 
-      <section class="card history" aria-live="polite"><h2>Recent activity</h2><ul id="rounds"><li>Nothing yet. Press Play, then start an offer.</li></ul></section>
-    </main>
-    <div class="popup-overlay" id="popup" hidden role="dialog" aria-modal="true" aria-labelledby="popup-title">
-      <div class="popup-card">
+      <section class="card popup-panel" id="popup" hidden role="status" aria-live="polite" aria-labelledby="popup-title">
         <h2 id="popup-title"></h2>
         <div id="popup-body"></div>
-        <button class="offer good popup-btn" id="popup-close" type="button"><strong>Continue</strong><span>Time is paused until you do</span></button>
-      </div>
-    </div>
+        <button class="offer good popup-btn" id="popup-close" type="button"><strong>Continue</strong><span>Time stays paused until you do</span></button>
+      </section>
+
+      <section class="card history" aria-live="polite"><h2>Recent activity</h2><ul id="rounds"><li>Nothing yet. Press Play, then start an offer.</li></ul></section>
+    </main>
   </div>
 </body>
 </html>

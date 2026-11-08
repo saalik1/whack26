@@ -35,6 +35,7 @@ OFFER_LOCK_HOURS = len(OPEN_HOURS)   # 12 shop hours = until the same time tomor
 LIVE_GOOD_EFFECT = 0.20       # the real lift of a Good Offer. The brief's example is +8%: harder for the AI
 PAST_DAYS = 182               # about six months of ordinary trading the AI learns from
 PAST_HOURS = PAST_DAYS * len(OPEN_HOURS)
+LIVE_EVENT_CHANCE = 0.008       # per hour while the player plays (about one surprise every 5 days)
 PAST_EVENT_CHANCE = 0.03      # extra events scheduled into the past, so the AI has seen every kind
 
 
@@ -72,6 +73,7 @@ class Game:
                     self.shop.rng.shuffle(order)
                 self.shop.trigger_event(order.pop())
             self.shop.step("none")
+        self.shop.spontaneous_chance = LIVE_EVENT_CHANCE
 
     # ---- what the screen needs to know ------------------------------------------ #
 
@@ -211,10 +213,10 @@ class Game:
         is_good = kind == "good"
         careful_right = (careful["verdict"] == "REAL") == is_good
         naive_right = (naive["verdict"] == "REAL") == is_good
-        careful["fooled"] = (not is_good) and careful["verdict"] == "REAL"
-        naive["fooled"] = (not is_good) and naive["verdict"] == "REAL"
-        naive["tag"] = "Fooled!" if naive["fooled"] else ("Got it right" if naive_right else "Missed it")
-        careful["tag"] = "Fooled!" if careful["fooled"] else ("Got it right" if careful_right else "Missed it")
+        careful["fooled"] = not careful_right
+        naive["fooled"] = not naive_right
+        naive["tag"] = "Fooled!" if naive["fooled"] else "Got it right"
+        careful["tag"] = "Fooled!" if careful["fooled"] else "Got it right"
 
         s = self.scores
         s["offersJudged"] += 1

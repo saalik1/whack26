@@ -161,6 +161,7 @@ class Shop:
         self.rng = random.Random(seed)
         self.seed = seed
         self.good_effect = good_effect
+        self.spontaneous_chance = SPONTANEOUS_EVENT_CHANCE
 
         self.step_count = 0
         self.day = 0
@@ -246,7 +247,7 @@ class Shop:
         forecast = self.forecast_next_hour()["expected"]
 
         # 2. An unannounced event may crash the party.
-        if self.active_event is None and self.rng.random() < SPONTANEOUS_EVENT_CHANCE:
+        if self.active_event is None and self.rng.random() < self.spontaneous_chance:
             key = self.rng.choice(list(EVENTS))
             spec = EVENTS[key]
             self.active_event = {"key": key, "label": spec["label"], "mult": spec["mult"],
