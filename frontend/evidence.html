@@ -33,30 +33,31 @@
     </section>
 
     <section class="figure">
-      <h2>2. The live game AI: why checking every round can't fool it</h2>
-      <img src="evidence_game.png" alt="Line chart: an ordinary p-value checked after every round is eventually fooled 19 percent of the time; our e-values stay at 1.7 percent, under the 2.5 percent budget. Bar chart: in the live game the naive AI is fooled by rush-hour bad offers in 100 percent of games, ours in 0.7 percent.">
-      <p>Same AI, only the decision rule differs: an ordinary p-value checked every round is fooled 19% of the time; our e-values 1.7%.
-        In the live game, a bad offer launched in rush hours fools the naive AI in every game and ours in 0.7%.</p>
+      <h2>2. The live game: three ways of deciding, three kinds of player</h2>
+      <img src="evidence_game.png" alt="Bar charts: the naive AI calls useless offers real 13 to 27 percent of the time, a habit-learning gut feeling about 4 percent, our evidence-only AI 0.3 percent, while still finding about 90 percent of good offers.">
+      <p>Every offer runs two shop days and gets a forced verdict, judged blind (the AI is never told good or bad).
+        Our AI decides on the evidence alone: REAL only if what it saw is at least 20 times likelier if the offer works
+        than if it does nothing (an e-value), so at most 5% of useless offers can pass, whatever the player does.
+        A "gut feeling" that learns the player's habits finds slightly more good offers but is fooled 10&ndash;15 times as often,
+        and a player can train it into mistakes.</p>
     </section>
 
     <section class="figure">
-      <h2>3. No hiding behind "not sure": every method forced to decide</h2>
-      <p>The rush-hour cheat runs for 10 trading days (120 hours), then every method must answer REAL or
-        "not proven, treat as no effect". NOT SURE counts as "no", so abstaining costs missed good offers. 300 games each, fresh seeds.</p>
+      <h2>3. The honest cost: small effects</h2>
+      <p>With a realistic +8% good offer, two days of data is not much. Each cell: useless offers called REAL / good offers called REAL.
+        40 games x 16 offers per strategy.</p>
       <table class="results">
-        <thead><tr><th>Method</th><th>Fooled (bad offer called REAL)</th><th>Found +20% good offer</th><th>Found +8% good offer</th></tr></thead>
+        <thead><tr><th>Method</th><th>Random player</th><th>Cheater</th><th>Switcher</th></tr></thead>
         <tbody>
-          <tr><td>Standard A/B test: offer hours vs normal hours, checked once</td><td>100.0%</td><td>0%</td><td>0%</td></tr>
-          <tr><td>Ordinary p-value, checked every hour</td><td>15.3%</td><td>100%</td><td>77%</td></tr>
-          <tr><td>Ordinary p-value, checked once at the end</td><td>3.7%</td><td>100%</td><td>61%</td></tr>
-          <tr><td><strong>Our AI: e-values, checked every hour</strong></td><td>1.3%</td><td>98%</td><td>34%</td></tr>
+          <tr><td>Naive AI (plain average)</td><td>15% / 28%</td><td>13% / 4.7%</td><td>31% / 43%</td></tr>
+          <tr><td>Gut feeling (learns your habits)</td><td>16% / 67%</td><td>8.6% / 57%</td><td>11% / 58%</td></tr>
+          <tr><td><strong>Our AI (evidence only)</strong></td><td>0.3% / 20%</td><td>0.0% / 13%</td><td>0.3% / 17%</td></tr>
         </tbody>
       </table>
-      <p>The textbook A/B test is wrong both ways: the cheat lines bad offers up with rush hours (and good ones with quiet hours).
-        Checking a p-value every hour gets fooled 15% of the time. Our AI is fooled 1.3% and still finds 98% of +20% offers.
-        The honest cost: a small (+8%) effect needs more than 10 days for us; a p-value checked only once finds more of them,
-        but only if you truly never look early.</p>
+      <p>Our AI still almost never calls a useless offer real, but it only confirms 13&ndash;20% of small (+8%) good offers in two days:
+        small effects need longer tests. The gut feeling finds more of them, at the price of being fooled 9&ndash;16% of the time.</p>
     </section>
+
   </main>
 </body>
 </html>

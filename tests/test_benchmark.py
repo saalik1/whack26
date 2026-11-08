@@ -40,8 +40,7 @@ def test_results_csv_is_complete_and_sane():
 
 def test_results_game_json_matches_the_claims():
     g = json.loads((ROOT / "backend" / "results_game.json").read_text())
-    peek = g["peeking"]
-    assert peek["pvalue_every_round"][-1] > 5 * peek["evalue_every_round"][-1]
-    assert peek["evalue_every_round"][-1] <= peek["budget"]
-    cheat = g["rush_hour_cheat"]["20pct"]
-    assert cheat["naive_ever_fooled"] == 1.0 and cheat["careful_ever_fooled"] < 0.02
+    for strategy, r in g["results"]["20pct"].items():
+        assert r["ours"]["fooled"] <= 0.02
+        assert r["ours"]["found"] >= 0.85
+        assert r["naive"]["fooled"] > r["ours"]["fooled"]

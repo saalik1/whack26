@@ -26,8 +26,11 @@ ONE verdict on everything that happened during it.
              - the player's habits, e.g. "bad offers tend to come on weekends".
            Several predictors, one per kind of habit, guess the offer before the evidence is
            looked at, and the AI trusts the ones that have been right lately.
-        4. It ALWAYS answers: a probability that the offer was good, and a verdict
-           (REAL above the bar, FAKE otherwise). It never says "not sure".
+        4. It ALWAYS answers, and it decides on the EVIDENCE alone: REAL only if the customers
+           seen are at least 20 times likelier if the offer works than if it does nothing (an
+           e-value, the method behind POPPER, ICML 2025). So at most 5% of useless offers are
+           ever called real, whatever the player does. Points 2-3 are a "gut feeling" shown as
+           commentary; they never decide, so the player can't train the AI into a mistake.
 """
 from __future__ import annotations
 
@@ -120,7 +123,8 @@ def naive_window(window: List[HourRecord], past: List[HourRecord]) -> dict:
 # Lifts a good offer might plausibly give. The AI starts with no idea which is the real
 # one; it learns how likely each size is from the offers it has judged (see PlayerMemory).
 LIFT_GRID = (0.06, 0.08, 0.10, 0.13, 0.16, 0.20, 0.25, 0.30)
-REAL_BAR = 0.5               # chance of "good" needed to say REAL
+REAL_BAR = 0.5               # the habit-based "gut feeling" (commentary only, never decides)
+E_BAR = 20.0                 # evidence needed to say REAL: 1 / 0.05 (at most 5% of useless offers pass)
 SHARE = 0.02                 # keeps every habit predictor alive, so a change of style is noticed
 HABITS = ("weekend", "event", "block", "previous")   # kinds of habit the AI keeps track of
 EM_ITERS = 10
@@ -184,6 +188,15 @@ def _log_lik_ratios(seen: int, expected: float, inflation: float) -> np.ndarray:
     P(seen | offer does nothing), softened by `inflation` (noisier data = weaker evidence)."""
     lifts = np.array(LIFT_GRID)
     return np.clip((seen * np.log1p(lifts) - lifts * expected) / inflation, -30.0, 30.0)
+
+
+def _e_value(L: np.ndarray) -> float:
+    """Mixture likelihood ratio over the lift grid with equal weights fixed in advance."""
+    return float(np.mean(np.exp(L)))
+
+
+def _fmt_e(e: float) -> str:
+    return "over 1,000" if e >= 1000 else (f"{e:.0f}" if e >= 10 else f"{e:.1f}")
 
 
 class PlayerMemory:
@@ -338,19 +351,32 @@ class CarefulAgent:
         self.offers_judged += 1
         self._previous = "good" if p > REAL_BAR else "bad"
 
-        verdict, label = ("REAL", "IT WORKED!") if p > REAL_BAR else ("FAKE", "NO REAL LIFT")
+        # THE DECISION uses the evidence alone: an e-value, how many times likelier the customers
+        # seen are if the offer works (averaged over plausible lift sizes, weights fixed in advance)
+        # than if it does nothing. For a useless offer its average is at most 1, so it reaches 20
+        # at most 5% of the time (Markov's inequality). Habits never decide; they are commentary.
+        e_value = _e_value(L)
+        verdict = "REAL" if e_value >= E_BAR else "FAKE"
+        label = "IT WORKED!" if verdict == "REAL" else "NO REAL LIFT"   # always a yes or a no
         confidence = p if verdict == "REAL" else 1 - p
         lift = seen / expected_total - 1
-        hedge = "It is close, but my best guess is that" if confidence < 0.65 else \
-                "I lean towards thinking" if confidence < 0.85 else "I'm confident that"
-        guess = "good" if verdict == "REAL" else "useless"
         events = self._event_summary(views)
         event_text = (" I allowed for: " + "; ".join(e["text"] for e in events) + ".") if events else ""
+        if verdict == "REAL":
+            judged = (f" That is {_fmt_e(e_value)} times likelier if the offer works than if it does nothing, "
+                      f"past the {E_BAR:.0f} times I need. It worked.")
+        elif e_value < 1:
+            judged = (" The customers fit 'the offer does nothing' better than 'it works'. "
+                      "My answer: no real lift.")
+        else:
+            judged = (f" The evidence is only {_fmt_e(e_value)} times likelier if it works, short of the "
+                      f"{E_BAR:.0f} times I need. My answer: no real lift.")
         text = (f"Over {len(views)} hours I expected about {expected_total:.0f} customers and saw {seen} "
-                f"({lift:+.0%}).{event_text} {hedge} this offer is {guess} "
-                f"(I put the chance it is good at {p:.0%}).{self._habit_note()}")
+                f"({lift:+.0%}).{event_text}{judged} (Gut feeling from your habits: {p:.0%} chance it is good.)"
+                f"{self._habit_note()}")
         return {"verdict": verdict, "label": label, "text": text,
-                "probability": round(p, 3),             # chance the offer is good
+                "evidence": round(e_value, 3), "evidenceNeeded": E_BAR,
+                "probability": round(p, 3),             # habit-based chance the offer is good (commentary)
                 "confidence": round(confidence, 3),     # chance the verdict above is right
                 "expected": round(expected_total), "seen": seen, "lift": round(lift, 3),
                 "hours": len(views), "events": events, "learned": self.what_i_learned()}

@@ -8,7 +8,7 @@ HOW THE GAME RUNS
     how often (pause / play / double play) using the speeds in config(), so the speed is
     changed in ONE place: SECONDS_PER_HOUR below.
   - launch_offer("good" | "bad") starts an offer. It then LOCKS the offer button for
-    OFFER_LOCK_HOURS shop hours (until the same time tomorrow). No new offer until then.
+    OFFER_LOCK_HOURS shop hours (two shop days, until the same time). No new offer until then.
   - When the lock ends both AIs give ONE verdict on the whole offer period. It comes back as
     a "verdict" pop-up.
   - trigger_event("random" or a key) adds an event (football match, tourist bus ...). It
@@ -31,7 +31,8 @@ from .simulator2 import AVG_BASKET, EVENTS, OPEN_HOURS, RUSH_THRESHOLD, WEEKDAYS
 # ---- the knobs ------------------------------------------------------------- #
 SECONDS_PER_HOUR = 2.0        # Play: one shop hour passes every this many real seconds
 DOUBLE_SPEED_FACTOR = 2.0     # Double play: this many times faster (2 s -> 1 s per hour)
-OFFER_LOCK_HOURS = len(OPEN_HOURS)   # 12 shop hours = until the same time tomorrow (the shop is shut overnight)
+OFFER_LOCK_DAYS = 2                 # an offer runs for two shop days: enough data to judge a +20% lift
+OFFER_LOCK_HOURS = OFFER_LOCK_DAYS * len(OPEN_HOURS)   # 24 shop hours (the shop is shut overnight)
 LIVE_GOOD_EFFECT = 0.20       # the real lift of a Good Offer. The brief's example is +8%: harder for the AI
 PAST_DAYS = 182               # about six months of ordinary trading the AI learns from
 PAST_HOURS = PAST_DAYS * len(OPEN_HOURS)
@@ -162,8 +163,8 @@ class Game:
             left = OFFER_LOCK_HOURS - self.offer["hoursDone"]
             return self._response(False, f"An offer is already running. You can launch another at "
                                          f"{self.offer['unlocksAt']} ({left} hours left).")
-        tomorrow = WEEKDAYS[(self.shop.weekday_idx + 1) % 7]
-        self.offer = {"kind": kind, "hoursDone": 0, "unlocksAt": f"{tomorrow} {label_time(self.shop.hour)}"}
+        unlock_day = WEEKDAYS[(self.shop.weekday_idx + OFFER_LOCK_DAYS) % 7]
+        self.offer = {"kind": kind, "hoursDone": 0, "unlocksAt": f"{unlock_day} {label_time(self.shop.hour)}"}
         self.window = []
         return self._response()
 
