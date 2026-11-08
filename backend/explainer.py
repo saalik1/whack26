@@ -2,7 +2,7 @@ from openai import OpenAI
 
 # Initialize the DeepSeek client with your API key hardcoded here:
 client = OpenAI(
-    api_key="sk-ce9f7f450bda463799e079f055f1a987",  # <--- Paste your key right here
+    api_key="",  # <--- Paste your key right here
     base_url="https://api.deepseek.com",            # DeepSeek API endpoint
 )
 
