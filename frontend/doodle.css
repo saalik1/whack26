@@ -338,3 +338,26 @@ a{color:inherit}
 .events-note{margin:0 0 8px;font-size:14px;font-weight:700}
 .events-list{margin:0;padding-left:20px;font-size:14px;line-height:1.55}
 .events-list li{margin-bottom:6px}
+
+/* verdict pop-up: the careful AI is the main result, the naive AI sits below, smaller */
+.popup-panel .popup-ais{grid-template-columns:1fr;max-width:620px;margin:16px auto}
+.popup-panel .popup-ai.main{padding:22px 20px;border-width:3.5px;background:#fff;box-shadow:4px 4px 0 #2b2420}
+.popup-panel .popup-ai.main h3{font-size:20px}
+.popup-panel .popup-ai.main .verdict-label{font-size:30px;padding:5px 18px}
+.popup-panel .popup-ai.main p{font-size:15px}
+.popup-panel .popup-ai.minor{padding:10px 16px;background:#f7f2e4;border-width:2px;opacity:.85;gap:4px}
+.popup-panel .popup-ai.minor h3{font-size:14px;margin:0}
+.popup-panel .popup-ai.minor .verdict-label{font-size:16px;padding:2px 10px}
+.popup-panel .popup-ai.minor .badge{font-size:11px}
+.popup-panel .popup-ai.minor p{font-size:12px;margin:2px 0 0}
+
+/* highlight the careful AI's answer */
+.popup-panel .popup-ai.main{position:relative;margin-top:14px;animation:answer-pop .45s ease-out}
+.popup-panel .popup-ai.main::before{content:"THE CAREFUL AI'S ANSWER";position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#2b2420;color:#fff8e9;font-weight:900;font-size:11px;letter-spacing:.8px;padding:4px 14px;border-radius:999px;white-space:nowrap}
+.popup-panel .popup-ai.main[data-verdict="REAL"]{background:#e6f7ec;border-color:#197443;box-shadow:0 0 0 5px rgba(25,116,67,.25),4px 4px 0 #197443}
+.popup-panel .popup-ai.main[data-verdict="FAKE"]{background:#fff0ea;border-color:#c83e08;box-shadow:0 0 0 5px rgba(200,62,8,.22),4px 4px 0 #c83e08}
+.popup-panel .popup-ai.main .verdict-label{border:3px solid #2b2420}
+.popup-panel .popup-ai.main[data-verdict="REAL"] .verdict-label{background:#8fdcae}
+.popup-panel .popup-ai.main[data-verdict="FAKE"] .verdict-label{background:#ffb199}
+@keyframes answer-pop{0%{transform:scale(.94);opacity:.4}70%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.popup-panel .popup-ai.main{animation:none}}

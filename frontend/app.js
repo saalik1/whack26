@@ -297,9 +297,10 @@ function openPopup(popup) {
     if (!verdictLogged) { verdictLogged = true; recordVerdict(popup); }
     body.append(el('p', 'popup-reveal', `You launched a ${offerName(popup.offer).toUpperCase()} (${popup.offer === 'good' ? 'it really lifts sales' : 'it does nothing at all'}).`));
     const row = el('div', 'popup-ais');
-    for (const [key, name] of [['naive', 'Naive AI'], ['careful', 'Careful AI']]) {
+    for (const [key, name] of [['careful', 'Careful AI'], ['naive', 'Naive AI (for comparison)']]) {
       const v = popup[key];
-      const card = el('div', `popup-ai ${key}`);
+      const card = el('div', `popup-ai ${key} ${key === 'careful' ? 'main' : 'minor'}`);
+      card.dataset.verdict = v.verdict;
       card.append(el('h3', '', name));
       const label = el('span', 'verdict-label', v.label);
       label.dataset.verdict = v.verdict;
@@ -327,6 +328,7 @@ function recordVerdict(popup) {
   showVerdict('naive', naive);
   showChecks(careful.verdict);
   $('naive-badge').textContent = naive.tag || 'Verdict';
+  if (careful.explanation && $('ai-explanation')) $('ai-explanation').textContent = careful.explanation;
   log(`Verdict on your ${offerName(popup.offer)} · Naive AI: ${naive.label}${naive.fooled ? ' (fooled!)' : ''}`
     + ` · Careful AI: ${careful.label}${careful.fooled ? ' (fooled!)' : ''}`);
 }
