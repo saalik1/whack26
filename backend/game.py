@@ -26,7 +26,7 @@ import threading
 from typing import Optional
 
 from .agents import CarefulAgent, naive_window
-from .simulator2 import EVENTS, OPEN_HOURS, RUSH_THRESHOLD, WEEKDAYS, Shop, label_time
+from .simulator2 import AVG_BASKET, EVENTS, OPEN_HOURS, RUSH_THRESHOLD, WEEKDAYS, Shop, label_time
 
 # ---- the knobs ------------------------------------------------------------- #
 SECONDS_PER_HOUR = 2.0        # Play: one shop hour passes every this many real seconds
@@ -35,6 +35,7 @@ OFFER_LOCK_HOURS = len(OPEN_HOURS)   # 12 shop hours = until the same time tomor
 LIVE_GOOD_EFFECT = 0.20       # the real lift of a Good Offer. The brief's example is +8%: harder for the AI
 PAST_DAYS = 182               # about six months of ordinary trading the AI learns from
 PAST_HOURS = PAST_DAYS * len(OPEN_HOURS)
+FRIEND_DIE_SIDES = 6            # Call Friends rolls one die with this many sides; the roll = friends who come
 LIVE_EVENT_CHANCE = 0.008       # per hour while the player plays (about one surprise every 5 days)
 PAST_EVENT_CHANCE = 0.03      # extra events scheduled into the past, so the AI has seen every kind
 
@@ -58,6 +59,7 @@ class Game:
         self.offer: Optional[dict] = None         # {"kind", "hoursDone", "unlocksAt"}
         self.window: list = []                    # the hours of the running offer
         self.popups: list = []                    # open pop-ups; time is frozen while there are any
+        self._friends_day = None                  # shop day on which Call Friends was last used
         self._event_hours: list = []              # hours of the event that is running
         self.scores = {"offersJudged": 0, "carefulRight": 0, "naiveRight": 0,
                        "carefulFooled": 0, "naiveFooled": 0}
@@ -80,6 +82,7 @@ class Game:
     def config(self) -> dict:
         return {
             "secondsPerHour": SECONDS_PER_HOUR,
+            "friendDieSides": FRIEND_DIE_SIDES,
             "speeds": {"pause": 0, "play": SECONDS_PER_HOUR, "double": SECONDS_PER_HOUR / DOUBLE_SPEED_FACTOR},
             "offerLockHours": OFFER_LOCK_HOURS,
             "events": [{"key": k, "label": v["label"], "hours": v["hours"],
@@ -119,6 +122,9 @@ class Game:
             "offer": offer,
             "canLaunchOffer": offer is None and not busy,
             "canTriggerEvent": not event_running and not busy,
+            "canCallFriends": self._friends_day != self.shop.day and not busy,
+            "friendsComing": 0,
+            "friendsLastHour": last.friends,                      # how many came in the hour just shown
             "paused": busy,                       # True while a pop-up is open
             "popups": list(self.popups),
             "scores": self._scores(),
@@ -160,6 +166,27 @@ class Game:
         self.offer = {"kind": kind, "hoursDone": 0, "unlocksAt": f"{tomorrow} {label_time(self.shop.hour)}"}
         self.window = []
         return self._response()
+
+    @_locked
+    def call_friends(self) -> dict:
+        """Roll a die: that many friends walk in during the hour on screen (only that hour). Once per shop day.
+        The AIs are never told; to them these are ordinary customers."""
+        if self.popups:
+            return self._response(False, "A pop-up is open. Dismiss it first.")
+        if self._friends_day == self.shop.day:
+            return self._response(False, "You already called your friends today. Try again tomorrow.")
+        roll = self.shop.rng.randint(1, FRIEND_DIE_SIDES)
+        # The friends are in the shop RIGHT NOW: they join the hour that is on screen.
+        record = self.shop.history[-1]
+        record.customers += roll
+        record.friends += roll
+        record.revenue = round(record.revenue + roll * AVG_BASKET, 2)
+        if record.action == "none":                  # the careful AI keeps its own copy of quiet hours
+            self.careful._quiet[-1] = record.ai_view()
+        self._friends_day = self.shop.day
+        out = self._response()
+        out["friendsRoll"] = roll
+        return out
 
     @_locked
     def trigger_event(self, which: str = "random") -> dict:

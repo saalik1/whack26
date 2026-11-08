@@ -273,3 +273,27 @@ a{color:inherit}
 .popup-panel .popup-btn{width:auto;min-width:260px;margin:14px auto 0}
 .history{margin-top:20px}
 @media(max-width:700px){.popup-panel{padding:18px 14px}.popup-panel .popup-ais{grid-template-columns:1fr}}
+
+/* ---- call friends: the dice ---- */
+.friends-body{display:flex;align-items:center;gap:18px;padding:14px 16px;flex-wrap:wrap}
+.friends-side{flex:1;min-width:190px}
+.friends-btn{width:100%}
+.friends-status{margin:10px 0 0;font-weight:800;font-size:13px}
+.die{position:relative;width:86px;height:86px;flex-shrink:0;background:#fff;border:3.5px solid #2b2420;border-radius:18px;box-shadow:4px 4px 0 #2b2420;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:10px;gap:2px}
+.die i{display:block;width:100%;height:100%;border-radius:50%;background:transparent;transform:scale(.7)}
+.die[data-face="0"]::after{content:"?";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 40px 'Fredoka',sans-serif;color:#b9ad9a}
+.die-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 38px 'Fredoka',sans-serif}
+/* pip positions by face: 1 2 3 / 4 5 6 / 7 8 9 */
+.die[data-face="1"] i:nth-child(5),
+.die[data-face="2"] i:nth-child(1),.die[data-face="2"] i:nth-child(9),
+.die[data-face="3"] i:nth-child(1),.die[data-face="3"] i:nth-child(5),.die[data-face="3"] i:nth-child(9),
+.die[data-face="4"] i:nth-child(1),.die[data-face="4"] i:nth-child(3),.die[data-face="4"] i:nth-child(7),.die[data-face="4"] i:nth-child(9),
+.die[data-face="5"] i:nth-child(1),.die[data-face="5"] i:nth-child(3),.die[data-face="5"] i:nth-child(5),.die[data-face="5"] i:nth-child(7),.die[data-face="5"] i:nth-child(9),
+.die[data-face="6"] i:nth-child(1),.die[data-face="6"] i:nth-child(3),.die[data-face="6"] i:nth-child(4),.die[data-face="6"] i:nth-child(6),.die[data-face="6"] i:nth-child(7),.die[data-face="6"] i:nth-child(9){background:#2b2420}
+.die.rolling{animation:dice-tumble .45s linear infinite}
+.die.landed{animation:dice-land .45s ease-out}
+@keyframes dice-tumble{0%{transform:translateY(0) rotate(0)}25%{transform:translateY(-14px) rotate(95deg)}50%{transform:translateY(0) rotate(190deg)}75%{transform:translateY(-10px) rotate(280deg)}100%{transform:translateY(0) rotate(360deg)}}
+@keyframes dice-land{0%{transform:scale(1.25) rotate(-8deg)}60%{transform:scale(.94)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.die.rolling,.die.landed{animation:none}}
+.big.bump{color:#197443;display:inline-block;animation:num-bump .24s ease-out infinite alternate}
+@keyframes num-bump{from{transform:scale(1)}to{transform:scale(1.12)}}

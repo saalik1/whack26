@@ -1,4 +1,4 @@
-import { startGame, tick, launchOffer, triggerEvent, dismissPopup } from './api.js';
+import { startGame, tick, launchOffer, triggerEvent, callFriends, dismissPopup } from './api.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -133,6 +133,81 @@ function showOffer(data) {
   }
 }
 
+/* ---------- call friends: a die decides how many come (next hour only, once a day) ---------- */
+let rolling = false;
+function showFriends(data) {
+  const btn = $('friends-btn');
+  btn.disabled = !data.canCallFriends || rolling;
+  btn.title = data.canCallFriends ? '' : 'Already used today, try again tomorrow';
+  if (rolling) return;
+  $('friends-status').textContent = data.friendsLastHour > 0
+    ? `${data.friendsLastHour} friend${data.friendsLastHour === 1 ? ' is' : 's are'} in your shop this hour.`
+    : data.canCallFriends ? 'Once per day. They join this hour and the AIs think they are real customers.'
+      : 'Already called today. Try again tomorrow.';
+}
+function setDie(face) {
+  const die = $('die');
+  die.dataset.face = String(face);
+  $('die-num').textContent = face > 6 ? String(face) : '';
+  die.setAttribute('aria-label', `Dice shows ${face}`);
+}
+function rollAnimation(finalFace, sides) {
+  return new Promise((resolve) => {
+    const die = $('die');
+    die.classList.add('rolling');
+    const spin = setInterval(() => setDie(1 + Math.floor(Math.random() * sides)), 90);
+    setTimeout(() => {
+      clearInterval(spin);
+      die.classList.remove('rolling');
+      setDie(finalFace);
+      die.classList.add('landed');
+      setTimeout(() => die.classList.remove('landed'), 500);
+      resolve();
+    }, 1200);
+  });
+}
+$('friends-btn').addEventListener('click', async () => {
+  if ($('friends-btn').disabled) return;
+  rolling = true;
+  $('friends-btn').disabled = true;
+  $('friends-status').textContent = 'Rolling... time is paused';
+  const speedBeforeRoll = speed;
+  setSpeed('pause');                        // time stands still while the dice roll
+  document.querySelectorAll('.clock-btn').forEach((b) => { b.disabled = true; });
+  $('clock-state').textContent = 'PAUSED (rolling)';
+  try {
+    await idle();
+    const data = await callFriends();
+    if (data.ok === false) { rolling = false; apply(data); return; }
+    const before = Number($('customers').textContent) || 0;
+    await rollAnimation(data.friendsRoll, sides);
+    rolling = false;
+    log(`${data.time} · Rolled a ${data.friendsRoll}: ${data.friendsRoll} friend${data.friendsRoll === 1 ? '' : 's'} joined, customers now ${data.customers}.`);
+    apply(data);
+    await countUp($('customers'), before, data.customers);
+  } catch (error) {
+    rolling = false;
+    showError(error.message);
+    $('friends-btn').disabled = false;
+  } finally {
+    document.querySelectorAll('.clock-btn').forEach((b) => { b.disabled = popupOpen; });
+    if (!popupOpen) setSpeed(speedBeforeRoll);
+  }
+});
+let sides = 6;
+function countUp(node, from, to) {            // the customers label ticks up one by one
+  return new Promise((resolve) => {
+    let n = from;
+    node.classList.add('bump');
+    const step = setInterval(() => {
+      n += 1;
+      node.textContent = String(Math.min(n, to));
+      if (n >= to) { clearInterval(step); setTimeout(() => node.classList.remove('bump'), 400); resolve(); }
+    }, 120);
+    if (from >= to) { clearInterval(step); node.classList.remove('bump'); resolve(); }
+  });
+}
+
 function apply(data) {
   if (data.ok === false) showError(data.error); else showError('');
   showConditions(data);
@@ -140,6 +215,7 @@ function apply(data) {
   showRatio(data.customers, data.expected);
   showBanner(data);
   showOffer(data);
+  showFriends(data);
   if (data.popups.length) openPopup(data.popups[0]); else closePopup();
 }
 
@@ -201,7 +277,7 @@ async function runTick() {
 const idle = async () => { if (inFlight) { try { await inFlight; } catch { /* handled by the timer */ } } };
 
 document.querySelectorAll('.clock-btn').forEach((b) => {
-  b.addEventListener('click', () => { if (!popupOpen) setSpeed(b.dataset.speed); });
+  b.addEventListener('click', () => { if (!popupOpen && !rolling) setSpeed(b.dataset.speed); });
 });
 
 /* ---------- pop-ups: time is frozen while one is open ---------- */
@@ -292,6 +368,7 @@ document.querySelectorAll('[data-offer]').forEach((button) => {
 /* ---------- start ---------- */
 startGame().then((data) => {
   if (data.config?.speeds) speeds = data.config.speeds;
+  if (data.config?.friendDieSides) sides = data.config.friendDieSides;
   setSpeed('pause');
   document.querySelectorAll('.clock-btn').forEach((b) => {
     const s = speeds[b.dataset.speed];

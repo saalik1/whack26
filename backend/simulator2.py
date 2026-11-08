@@ -126,8 +126,9 @@ class HourRecord:
     expected_customers: float   # true no-offer baseline for the conditions that really happened
     true_effect: float          # real lift caused by the action (0.08 for good, 0 otherwise)
     offer_is_real: bool
+    friends: int = 0            # friends the player called in this hour (already inside `customers`)
 
-    HIDDEN = ("expected_customers", "true_effect", "offer_is_real")
+    HIDDEN = ("expected_customers", "true_effect", "offer_is_real", "friends")
 
     def public(self) -> dict:
         """The record as the AI and the player are allowed to see it."""
@@ -162,6 +163,7 @@ class Shop:
         self.seed = seed
         self.good_effect = good_effect
         self.spontaneous_chance = SPONTANEOUS_EVENT_CHANCE
+        self.pending_friends = 0     # friends who walk in during the NEXT hour only
 
         self.step_count = 0
         self.day = 0
@@ -264,6 +266,8 @@ class Shop:
                                       self.temperature_c, self._event_mult(), self.day)
         effect = self.good_effect if action == "good" else TRUE_EFFECTS[action]
         customers = poisson(self.rng, baseline * (1 + effect))
+        friends, self.pending_friends = self.pending_friends, 0
+        customers += friends          # to everyone (and every AI) they look like ordinary customers
         revenue = max(0.0, customers * AVG_BASKET + self.rng.gauss(0, BASKET_SD * math.sqrt(max(customers, 1))))
 
         record = HourRecord(
@@ -274,7 +278,7 @@ class Shop:
             action=action, forecast=forecast, customers=customers,
             revenue=round(revenue, 2), is_rush_hour=baseline >= RUSH_THRESHOLD,
             expected_customers=round(baseline, 2), true_effect=effect,
-            offer_is_real=effect > 0,
+            offer_is_real=effect > 0, friends=friends,
         )
         self.history.append(record)
         self.step_count += 1

@@ -13,7 +13,7 @@ The game runs on a clock the BROWSER drives: it calls /api/tick once per shop ho
 backend/game.py). Everything else happens in Python.
 
 Two groups of endpoints:
-  /api/start, /api/tick, /api/offer, /api/trigger_event, /api/dismiss
+  /api/start, /api/tick, /api/offer, /api/trigger_event, /api/call_friends, /api/dismiss
                            what the frontend uses. One game per browser (cookie),
                            so several judges can play at the same time.
   /api/new_game, /api/step, /api/event, /api/state, /api/history
@@ -83,6 +83,12 @@ def tick(request: Request):
 def launch_offer(body: OfferRequest, request: Request):
     """Start a good or bad offer. It then runs for a full day and locks until tomorrow, same time."""
     return current_game(request).launch_offer(body.kind)
+
+
+@app.post("/api/call_friends")
+def call_friends(request: Request):
+    """Roll a die; that many friends visit during the next hour (once per shop day)."""
+    return current_game(request).call_friends()
 
 
 @app.post("/api/trigger_event")

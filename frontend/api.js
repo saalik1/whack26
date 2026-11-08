@@ -9,7 +9,7 @@
  */
 export const config = {
   startUrl: '/api/start', tickUrl: '/api/tick', offerUrl: '/api/offer',
-  eventUrl: '/api/trigger_event', dismissUrl: '/api/dismiss',
+  eventUrl: '/api/trigger_event', friendsUrl: '/api/call_friends', dismissUrl: '/api/dismiss',
 };
 
 async function post(url, body) {
@@ -39,4 +39,5 @@ export const launchOffer = (kind) => {
   if (!['good', 'bad'].includes(kind)) throw new Error('Unknown offer');
   return post(config.offerUrl, { kind });
 };
+export const callFriends = () => post(config.friendsUrl, {});
 export const triggerEvent = (event = 'random') => post(config.eventUrl, { event });
