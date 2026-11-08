@@ -1,70 +1,77 @@
-"""backend/game.py: one player's game, as the screen uses it."""
-from backend.game import PAST_HOURS, Game
-from backend.simulator2 import RUSH_THRESHOLD
+"""backend/game.py: the live game loop the screen drives (offers lock for two shop days)."""
+from backend.evidence_game import play
+from backend.game import OFFER_LOCK_DAYS, OFFER_LOCK_HOURS, PAST_HOURS, Game
+from backend.simulator2 import WEEKDAYS
 
-CONTRACT = {"customers", "weather", "temperature", "time", "event", "offer", "expected",
-            "careful", "naive", "scores", "nextPrediction", "nextIsRush"}
+
+def finish_offer(g):
+    for _ in range(OFFER_LOCK_HOURS * 3):
+        for pop in list(g.popups):
+            if pop["type"] == "verdict":
+                return pop
+            g.dismiss_popup()
+        g.tick()
+    raise AssertionError("no verdict")
+
+
+def test_offer_runs_two_shop_days():
+    assert OFFER_LOCK_DAYS == 2 and OFFER_LOCK_HOURS == 24
 
 
 def test_start_payload():
     p = Game(seed=1).start_payload()
-    assert {"customers", "weather", "time", "scores", "nextPrediction", "nextIsRush"} <= set(p)
-    assert p["scores"] == {"rounds": 0, "carefulFooled": 0, "naiveFooled": 0}
+    assert p["ok"] and "config" in p and "scores" in p
 
 
-def test_game_starts_with_8_weeks_of_history():
+def test_game_starts_with_six_months_of_history():
     g = Game(seed=2)
-    assert len(g.shop.history) == PAST_HOURS + 1
-    assert g.careful.model is not None
+    assert len(g.shop.history) == PAST_HOURS + 1 and g.careful.model is not None
 
 
-def test_play_returns_what_the_screen_needs():
-    out = Game(seed=3).play("good")
-    assert CONTRACT <= set(out)
-    assert {"verdict", "label", "text", "fooled"} <= set(out["careful"])
-    assert {"verdict", "label", "text", "tag", "fooled"} <= set(out["naive"])
+def test_offer_locks_until_two_days_later():
+    g = Game(seed=3)
+    day = g.shop.weekday_idx
+    out = g.launch_offer("bad")
+    assert out["ok"]
+    assert g.offer["unlocksAt"].startswith(WEEKDAYS[(day + OFFER_LOCK_DAYS) % 7])
+    second = g.launch_offer("good")
+    assert not second["ok"] and "already running" in second["error"]
 
 
-def test_scores_count_rounds_and_fools():
+def test_verdict_arrives_and_time_pauses_for_popups():
     g = Game(seed=4)
-    for offer in ("bad", "good", "random"):
-        out = g.play(offer)
-    assert out["scores"]["rounds"] == 3
+    g.launch_offer("good")
+    pop = finish_offer(g)
+    assert {"careful", "naive", "offer", "scores"} <= set(pop)
+    assert not g.tick()["ok"]                     # paused while the pop-up is open
+    g.dismiss_popup()
+    assert g.scores["offersJudged"] == 1
 
 
-def test_fast_forward_runs_many_hours_but_is_capped():
+def test_call_friends_once_per_day():
     g = Game(seed=5)
-    before = len(g.shop.history)
-    g.play("good", hours=12)
-    assert len(g.shop.history) == before + 12
-    before = len(g.shop.history)
-    g.play("bad", hours=10_000)
-    assert len(g.shop.history) == before + 84
+    assert g.call_friends()["ok"]
+    assert not g.call_friends()["ok"]
 
 
-def test_rush_hour_cheat_fools_naive_not_careful():
-    naive_games = careful_games = 0
-    for seed in range(20):
-        g = Game(seed=90000 + seed)
-        n = c = False
-        for _ in range(40):
-            rush = g.shop.forecast_next_hour()["expected"] >= RUSH_THRESHOLD
-            out = g.play("bad" if rush else "good")
-            if out["offer"] == "bad":
-                n |= out["naive"]["fooled"]
-                c |= out["careful"]["fooled"]
-        naive_games += n
-        careful_games += c
-    assert naive_games >= 18
-    assert careful_games <= 1
+def test_invalid_offer_rejected():
+    assert not Game(seed=6).launch_offer("bribe")["ok"]
 
 
-def test_good_offer_eventually_confirmed_with_fast_forward():
-    confirmed = 0
-    for seed in range(20):
-        g = Game(seed=91000 + seed)
-        for _ in range(8):                       # up to 96 hours of the good offer
-            if g.play("good", hours=12)["careful"]["verdict"] == "REAL":
-                confirmed += 1
-                break
-    assert confirmed >= 16
+def test_cheater_fools_naive_not_ours():
+    rows = [r for s in range(8) for r in play(140000 + s, 0.20, "cheater", offers=8)]
+    bad = [r for r in rows if r["kind"] == "bad"]
+    assert sum(r["ours"] for r in bad) <= 1
+    assert sum(r["naive"] for r in bad) > sum(r["ours"] for r in bad)
+
+
+def test_switcher_cannot_train_our_ai_into_a_mistake():
+    rows = [r for s in range(8) for r in play(141000 + s, 0.20, "switcher", offers=8)]
+    late_bad = [r for r in rows if r["kind"] == "bad" and r["offer"] >= 4]
+    assert sum(r["ours"] for r in late_bad) <= 1
+
+
+def test_good_offers_mostly_found():
+    rows = [r for s in range(8) for r in play(142000 + s, 0.20, "random", offers=8)]
+    good = [r for r in rows if r["kind"] == "good"]
+    assert sum(r["ours"] for r in good) / len(good) >= 0.75

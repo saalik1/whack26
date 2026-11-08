@@ -327,7 +327,6 @@ function recordVerdict(popup) {
   showVerdict('naive', naive);
   showChecks(careful.verdict);
   $('naive-badge').textContent = naive.tag || 'Verdict';
-  if (careful.explanation && $('ai-explanation')) $('ai-explanation').textContent = careful.explanation;
   log(`Verdict on your ${offerName(popup.offer)} · Naive AI: ${naive.label}${naive.fooled ? ' (fooled!)' : ''}`
     + ` · Careful AI: ${careful.label}${careful.fooled ? ' (fooled!)' : ''}`);
 }

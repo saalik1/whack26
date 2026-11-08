@@ -9,10 +9,10 @@ and says **REAL**, **FAKE** or **NOT SURE YET**.
 pip install -r requirements.txt
 uvicorn api:app --reload
 ```
-Open http://localhost:8000 and try to sneak a useless offer past the AI by launching it in a rush hour.
-The naive AI (plain average) falls for it; ours compares each hour with what it *expected* and builds up
-evidence across rounds with **e-values**, so checking after every click can't fool it.
-Tick *Fast-forward* to run each offer for 12 hours.
+Open http://localhost:8000. Launch a good or a bad offer; it runs for two shop days, then both AIs give
+a verdict. Try to sneak a useless offer past them: launch it before a busy weekend, add an event, call
+your friends in. The naive AI (plain average) falls for it; ours compares every hour with what it
+*expected* and only says REAL when the evidence passes an e-value bar, so it is almost never fooled.
 
 ## The evidence
 The **The evidence** button in the game opens `frontend/evidence.html`. Chart 1 (`frontend/evidence.png`):
@@ -27,31 +27,30 @@ The **The evidence** button in the game opens `frontend/evidence.html`. Chart 1 
 | Riding a sales trend | 52% | 0% | 96% |
 | Stopping early | 24% | 0.5% | 82% |
 
-**Live game AI** (`frontend/evidence_game.png`, fresh games):
-- Checking after every round (the "stop when it looks good" trap): an ordinary p-value is eventually
-  fooled by a useless offer **19%** of the time over 100 rounds; our e-values **1.7%** (budget 2.5%).
-  Same AI, same learned baseline; only the decision rule differs. (1,000 games)
-- Bad offer launched in rush hours: naive AI fooled in **100%** of games, ours in **0.7%**; ours still
-  confirms the good offer in 90% of games (median 27 rounds). (300 games)
+**Live game AI** (`frontend/evidence_game.png`): 40 games x 16 offers per player
+strategy, each offer runs two shop days and gets a forced, blind verdict. Cells: useless offers called REAL /
+good offers called REAL.
 
-**Forced decision, no hiding behind NOT SURE** (10 trading days of the rush-hour cheat, then every
-method must say REAL or "not proven"; NOT SURE counts as no; 300 games):
+Good offer +20%:
 
-| Method | Fooled (bad called REAL) | Found +20% good offer | Found +8% good offer |
+| Method | Random player | Cheater | Switcher |
 |---|---|---|---|
-| Standard A/B test: offer hours vs normal hours, checked once | 100.0% | 0% | 0% |
-| Ordinary p-value, checked every hour | 15.3% | 100% | 77% |
-| Ordinary p-value, checked once at the end | 3.7% | 100% | 61% |
-| **Our AI: e-values, checked every hour** | 1.3% | 98% | 34% |
+| Naive AI (plain average) | 13% / 53% | 16% / 23% | 27% / 63% |
+| Gut feeling (learns your habits) | 4.4% / 99% | 4.0% / 98% | 4.7% / 98% |
+| **Our AI (evidence only)** | 0.3% / 90% | 0.3% / 89% | 0.3% / 91% |
 
-Honest cost: small effects need more data. A p-value checked once finds more +8% offers, but only if
-nobody ever looks early; in a live setting you look every hour.
+Good offer +8% (the honest cost: small effects need longer tests):
+
+| Method | Random player | Cheater | Switcher |
+|---|---|---|---|
+| Naive AI (plain average) | 15% / 28% | 13% / 4.7% | 31% / 43% |
+| Gut feeling (learns your habits) | 16% / 67% | 8.6% / 57% | 11% / 58% |
+| **Our AI (evidence only)** | 0.3% / 20% | 0.0% / 13% | 0.3% / 17% |
 
 Reproduce it yourself (fixed seeds, same numbers every time):
 ```
 python -m backend.benchmark --cheat all --games 200   # ~7 min, writes backend/results.csv
 python -m backend.evidence_game                       # ~1 min, writes backend/results_game.json
-python -m backend.evidence_game --forced              # ~15 s, adds the forced-decision table
 python -m backend.make_chart                          # redraws both evidence charts
 ```
 
@@ -59,22 +58,22 @@ python -m backend.make_chart                          # redraws both evidence ch
 ```
 python -m pytest -q        # 85 tests, ~1.5 min
 ```
-They check both simulators, both AIs, the game, the API and the screen wiring, including:
-pure noise finds nothing; every cheat fools the naive AI but not ours; the careful AI never
-reads the hidden truth (we corrupt it and the verdicts don't change); one hour is never enough
-to say REAL; the e-value stays valid however often you check; the screen shows the server's
-verdicts, not its own.
+They check both simulators, both AIs, the game loop, the API and the screen wiring, including:
+pure noise finds nothing; every cheat fools the naive AI but not ours; the careful AI never reads
+the hidden truth and is never told which offer it is judging (we corrupt the truth and swap the
+labels, and the verdict doesn't change); its verdict depends on the evidence alone, never on the
+player's habits; the e-value bar keeps useless offers below 5%; the screen shows the server's verdicts.
 
 ## How our AI works
 - **Daily engine** (`backend/defender.py`, used for the evidence): trend removal (STL), weekday/payday
   controls, outlier-proof sales, "not sure" when two changes always happen together, permutation tests
   with Holm correction. Settings tuned on separate games from the ones reported.
-- **Live game AI** (`backend/agents.py`): learns a normal hour from 8 weeks of past sales (Poisson
-  regression, never the simulator's formula), allows for its own uncertainty, and accumulates evidence
-  with an anytime-valid e-value, the sequential-testing idea from POPPER (Huang et al., ICML 2025),
-  with the 5% error budget split across the two offers.
+- **Live game AI** (`backend/agents.py`): learns a normal hour from 6 months of past sales (Poisson
+  regression, never the simulator's formula), allows for its own uncertainty, and judges each offer blind.
+  It decides with an e-value (mixture likelihood ratio, bar 20 = 5% error), the idea behind POPPER
+  (Huang et al., ICML 2025). A habit-learning "gut feeling" is shown as commentary only.
 
-Honest limits: the live game's good offer is +20% so it resolves during a demo (+8% takes ~3x longer);
+Honest limits: the live game's good offer is +20% so it resolves during a demo (+8% needs longer tests);
 everything is tested on simulated shops, where the truth is known. Real data is the next step.
 
 ## Files
