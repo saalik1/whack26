@@ -6,6 +6,16 @@
   <meta name="theme-color" content="#efe0bd">
   <title>Fool the AI — The little shop experiment</title>
   <link rel="stylesheet" href="doodle.css">
+  <script>
+    window.addEventListener('error', function (e) {
+      var m = document.getElementById('clock-msg');
+      if (m) { m.textContent = 'Page error: ' + e.message + ' (' + (e.filename || '').split('/').pop() + ':' + e.lineno + '). Hard-refresh with Ctrl+Shift+R; if it stays, send me this message.'; m.hidden = false; }
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      var m = document.getElementById('clock-msg');
+      if (m) { m.textContent = 'Error: ' + (e.reason && e.reason.message || e.reason); m.hidden = false; }
+    });
+  </script>
   <script type="module" src="app.js"></script>
 </head>
 <body>
@@ -27,14 +37,22 @@
           <svg id="weather-icon" viewBox="0 0 40 40" aria-hidden="true"></svg>
           <span id="weather">Sunny</span>
         </div>
+        <div class="clock" role="group" aria-label="Game speed">
+          <button class="clock-btn" type="button" data-speed="pause" aria-pressed="true" title="Pause">&#10074;&#10074; Pause</button>
+          <button class="clock-btn" type="button" data-speed="play" aria-pressed="false">&#9654; Play</button>
+          <button class="clock-btn" type="button" data-speed="double" aria-pressed="false">&#9654;&#9654; Double</button>
+          <span class="clock-state" id="clock-state" data-state="pause">PAUSED</span>
+          <span class="speed-note" id="speed-note">Paused</span>
+        </div>
         <div class="spacer"></div>
         <div class="scores" style="display:contents" aria-label="Game scores">
           <span class="chip star"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12" fill="#ffd84d" stroke="#2b2420" stroke-width="2.5"/><path d="M14 7l2 4.5 5 .6-3.7 3.4 1 4.9-4.3-2.5-4.3 2.5 1-4.9L7 12.100l5-.6z" fill="#fff6c9" stroke="#2b2420" stroke-width="1.6" stroke-linejoin="round"/></svg>You fooled the AI <strong id="careful-score">0 / 0</strong></span>
           <span class="chip"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12" fill="#f59b73" stroke="#2b2420" stroke-width="2.5"/><path d="M14 8v8M14 19.500v.5" stroke="#2b2420" stroke-width="2.800" stroke-linecap="round"/></svg>Naive AI fooled <strong id="naive-score">0 times</strong></span>
         </div>
-        <a class="link-btn" href="evidence.html">The evidence</a>
         <form action="index.html"><button class="end-game" type="submit">End Game <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4H4v16h6M10 12h10m-4-4 4 4-4 4"/></svg></button></form>
       </header>
+
+      <p class="clock-msg" id="clock-msg" role="alert" hidden></p>
 
       <div class="board">
         <!-- LEFT: customers + store -->
@@ -72,7 +90,7 @@
                 <div>
                   <div class="say">Impulsive verdict (plain average):</div>
                   <div><span class="verdict-label" id="naive-verdict">WAITING</span><span class="badge" id="naive-badge">Waiting</span></div>
-                  <p class="desc" id="naive-description">I only compare the next hour with the shop’s average hour. Busy hours make me excited.</p>
+                  <p class="desc" id="naive-description">I compare the offer day with the shop’s average hour. Busy hours make me excited.</p>
                 </div>
               </div>
             </article>
@@ -88,7 +106,7 @@
                       <div class="meter-track" role="img" aria-label="Customers compared with what the careful AI expected"><div class="meter-fill" id="ratio-fill"></div><div class="meter-mark" title="Expected"></div></div>
                     </div>
                     <span class="verdict-label" id="careful-verdict">WAITING</span>
-                    <p class="desc" id="careful-description">Pick an offer. I will compare the next hour with the number of customers I expected, then give a verdict.</p>
+                    <p class="desc" id="careful-description">Start an offer. I will watch the whole day, then give a verdict.</p>
                   </div>
                 </div>
                 <div class="stat-verdict">
@@ -96,30 +114,47 @@
                   <ul class="checks" id="checks">
                     <li class="real" data-key="REAL"><span class="box"></span>Real</li>
                     <li class="fake" data-key="FAKE"><span class="box"></span>Fake</li>
-                    <li class="unsure" data-key="NOT SURE YET"><span class="box"></span>Not sure</li>
                   </ul>
                 </div>
               </div>
             </article>
           </div>
 
+          <!-- ADD THIS: DeepSeek Explanation Box -->
+<section class="card deepseek-card" aria-label="DeepSeek Explanation" style="margin-bottom: 20px; background: #fffdf9; border: 2.5px solid #2b2420; border-radius: 12px; padding: 16px;">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+    <span style="font-size: 20px;">🧠</span>
+    <h2 class="card-head" style="margin: 0; font-size: 1.1rem;">DeepSeek's Statistical Breakdown</h2>
+  </div>
+  <p id="ai-explanation" class="desc" style="font-style: italic; color: #4a4540; margin: 0;">
+    Make your first move (Good or Bad offer) to see DeepSeek analyze whether the AIs got fooled or stayed sharp!
+  </p>
+</section>
+
           <section class="dock" aria-label="Choose an offer">
             <div class="dock-frame">
               <div class="offers">
                 <button class="offer good" type="button" data-offer="good"><strong>Good Offer <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.500 7 .8-5.200 4.800 1.400 7L12 17.600 5.800 21l1.400-7L2 9.300l7-.8z" fill="#ffd84d" stroke="#2b2420" stroke-width="2" stroke-linejoin="round"/></svg></strong><span>Really lifts sales</span></button>
                 <button class="offer bad" type="button" data-offer="bad"><strong>Bad Offer <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3L23 21H1Z" fill="#ffd84d" stroke="#2b2420" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v5M12 17.500v.5" stroke="#2b2420" stroke-width="2.200" stroke-linecap="round"/></svg></strong><span>Does nothing at all</span></button>
-                <button class="offer random" type="button" data-offer="random"><strong>Random Event</strong><span>Shake up the next hour</span></button>
+                <button class="offer random" type="button" data-offer="random"><strong>Random Event</strong><span>Add an event to the day</span></button>
               </div>
             </div>
-            <p class="dock-foot">Each offer runs for the next hour. Watch the blue prediction: a high number means a rush is coming.<br>
-              <label class="fast-forward"><input type="checkbox" id="fast-forward"> Fast-forward: run each offer for 12 hours</label></p>
+            <p class="offer-status" id="offer-status">No offer running. Pick one, then press Play.</p>
+            <p class="dock-foot">An offer runs until tomorrow, same time, then the AIs give their verdict. Use Pause, Play and Double to move time; a random event changes sales for a few hours.</p>
           </section>
           <p id="error" class="error" role="alert" hidden></p>
         </div>
       </div>
 
-      <section class="card history" aria-live="polite"><h2>Recent rounds</h2><ul id="rounds"><li>No rounds yet. Press an offer button.</li></ul></section>
+      <section class="card history" aria-live="polite"><h2>Recent activity</h2><ul id="rounds"><li>Nothing yet. Press Play, then start an offer.</li></ul></section>
     </main>
+    <div class="popup-overlay" id="popup" hidden role="dialog" aria-modal="true" aria-labelledby="popup-title">
+      <div class="popup-card">
+        <h2 id="popup-title"></h2>
+        <div id="popup-body"></div>
+        <button class="offer good popup-btn" id="popup-close" type="button"><strong>Continue</strong><span>Time is paused until you do</span></button>
+      </div>
+    </div>
   </div>
 </body>
 </html>

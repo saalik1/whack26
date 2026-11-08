@@ -220,3 +220,29 @@ a{color:inherit}
   .robot{width:84px}
   .ai.naive .robot{width:96px}
 }
+/* ---- clock controls, offer status, pop-up ---- */
+.clock{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.clock-btn{border:2.5px solid #2b2420;border-radius:14px;background:#fff;padding:6px 12px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 #2b2420}
+.clock-btn[aria-pressed="true"]{background:#ffd84d}
+.clock-btn:disabled{opacity:.55;cursor:not-allowed}
+.speed-note{font-size:12px;font-weight:800;margin-left:4px}
+.offer-status{margin:10px 0 0;font-weight:800;font-size:13px}
+.offer:disabled{opacity:.5;cursor:not-allowed}
+.window{position:relative}
+.popup-overlay{position:fixed;inset:0;background:rgba(43,36,32,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.popup-overlay[hidden]{display:none}
+.popup-card{background:#fff8e9;border:3px solid #2b2420;border-radius:20px;box-shadow:4px 4px 0 #2b2420;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:20px}
+.popup-ais{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.popup-ai{border:2.5px solid #2b2420;border-radius:14px;background:#fff;padding:12px}
+.popup-ai h3{margin:0 0 6px}
+.popup-btn{width:100%;margin-top:8px}
+.verdict-label[data-verdict="REAL"]{background:#d9f2e3}
+.verdict-label[data-verdict="FAKE"]{background:#ffe0d3}
+.verdict-label[data-verdict="NO OFFER"]{background:#eeeae0}
+@media(max-width:600px){.popup-ais{grid-template-columns:1fr}}
+.clock-state{border:2.5px solid #2b2420;border-radius:999px;padding:5px 12px;font-weight:900;font-size:13px;background:#eeeae0;white-space:nowrap}
+.clock-state[data-state="play"]{background:#d9f2e3}
+.clock-state[data-state="double"]{background:#ffd84d}
+.clock-state[data-state="pause"]{background:#ffe0d3}
+.clock-msg{margin:8px 0;padding:10px 14px;border:2.5px solid #c83e08;border-radius:12px;background:#fff1ec;font-weight:800;font-size:13px}
+.clock-msg[hidden]{display:none}

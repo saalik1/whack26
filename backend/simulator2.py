@@ -37,7 +37,7 @@ HOURLY_CURVE = {
 RUSH_THRESHOLD = 25          # an hour counts as a "rush" above this baseline
 WEEKEND_MULT = 1.3
 WEATHER_MULT = {"Sunny": 1.10, "Cloudy": 1.00, "Rainy": 0.80}
-TREND_PER_DAY = 0.002        # shop slowly grows 0.2% a day
+TREND_PER_DAY = 0.0005       # shop slowly grows 0.05% a day (about 10% over six months)
 
 # Weather is a Markov chain: it tends to stay the same from hour to hour.
 WEATHER_TRANSITIONS = {
@@ -50,12 +50,14 @@ WEATHER_TEMP_ADJ = {"Sunny": 2.0, "Cloudy": 0.0, "Rainy": -2.0}
 # The hidden truth. This is what the AI is trying to discover.
 TRUE_EFFECTS = {"none": 0.0, "bad": 0.0, "good": 0.08}
 
-# Random events: multiplier on customers, how many hours it lasts.
+# Random events: multiplier on customers, how many hours it lasts. The keys and hours match
+# the pictures and banners in the frontend (frontend/app.js).
 EVENTS = {
-    "tourist_bus": {"label": "Tourist bus arrives", "mult": 1.5, "hours": 1},
-    "local_fair":  {"label": "Local fair nearby",   "mult": 1.3, "hours": 3},
-    "power_cut":   {"label": "Power cut",           "mult": 0.6, "hours": 1},
-    "heavy_rain":  {"label": "Heavy rain",          "mult": 0.9, "hours": 2, "force_weather": "Rainy"},
+    "leicester_win":   {"label": "LCFC wins a dramatic match!",                  "mult": 1.5, "hours": 3},
+    "whack_hackathon": {"label": "WHACK Warwick Hackathon is happening today!",  "mult": 1.3, "hours": 6},
+    "wifi_outage":     {"label": "City-wide card machine crash",                 "mult": 0.6, "hours": 2},
+    "tiktok_viral":    {"label": "A food reviewer goes viral on TikTok!",        "mult": 1.6, "hours": 1},
+    "roadworks":       {"label": "Emergency roadworks outside",                  "mult": 0.8, "hours": 5},
 }
 SPONTANEOUS_EVENT_CHANCE = 0.03   # per hour, when no event is running
 EVENT_MULT_BY_LABEL = {spec["label"]: spec["mult"] for spec in EVENTS.values()}
@@ -132,6 +134,15 @@ class HourRecord:
         d = asdict(self)
         for key in self.HIDDEN:
             d.pop(key, None)
+        return d
+
+    def ai_view(self) -> dict:
+        """What the AI judge is allowed to see: the public record, except that the offer is
+        anonymous ("offer" or "none": it is never told whether the player picked good or bad)
+        and facts derived from the hidden baseline (is_rush_hour) are removed."""
+        d = self.public()
+        d["action"] = "none" if self.action == "none" else "offer"
+        d.pop("is_rush_hour", None)
         return d
 
     def full(self) -> dict:

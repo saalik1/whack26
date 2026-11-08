@@ -8,8 +8,13 @@ Docs: http://localhost:8000/docs     (try every endpoint by hand)
 The browser only sends the player's choice and draws what comes back.
 The simulation, the two AIs and the scoring all stay in Python.
 
+The game runs on a clock the BROWSER drives: it calls /api/tick once per shop hour (every
+2 seconds on Play, every 1 second on Double Play, never on Pause; see SECONDS_PER_HOUR in
+backend/game.py). Everything else happens in Python.
+
 Two groups of endpoints:
-  /api/start, /api/round   what the frontend uses. One game per browser (cookie),
+  /api/start, /api/tick, /api/offer, /api/trigger_event, /api/dismiss
+                           what the frontend uses. One game per browser (cookie),
                            so several judges can play at the same time.
   /api/new_game, /api/step, /api/event, /api/state, /api/history
                            raw simulator access for testing and for the evidence runs.
@@ -45,26 +50,51 @@ def new_session(response: Response) -> Game:
     return SESSIONS[sid]
 
 
-class RoundRequest(BaseModel):
-    offer: Literal["good", "bad", "random"]
-    hours: int = 1                   # >1 = fast-forward that many hours with the same offer (max 84)
-    state: Optional[dict] = None     # the frontend's own copy; the server does not trust it
+class OfferRequest(BaseModel):
+    kind: Literal["good", "bad"]
+
+
+class TriggerEventRequest(BaseModel):
+    event: str = "random"            # "random" or an event key (see GET /api/events)
+
+
+def current_game(request: Request) -> Game:
+    game = SESSIONS.get(request.cookies.get(COOKIE, ""))
+    if game is None:
+        raise HTTPException(404, "No game for this browser. Reload the page to start a new one.")
+    return game
 
 
 @app.post("/api/start")
 def start(response: Response):
-    """Called when the page loads: a fresh shop and the numbers for the first screen."""
+    """Called when the page loads: a fresh shop and the numbers for the first screen
+    (including config: the clock speeds, the offer lock and the list of events)."""
     return new_session(response).start_payload()
 
 
-@app.post("/api/round")
-def play_round(body: RoundRequest, request: Request, response: Response):
-    """One button press: good, bad or random. Simulates the next hour and judges it."""
-    game = SESSIONS.get(request.cookies.get(COOKIE, ""))
-    just_started = (body.state or {}).get("round") == 0
-    if game is None or (just_started and game.rounds > 0):   # no game yet, or page was reloaded
-        game = new_session(response)
-    return game.play(body.offer, body.hours)
+@app.post("/api/tick")
+def tick(request: Request):
+    """ONE shop hour passes. The browser calls this on a timer while the game is playing.
+    Refused (ok=false) while a pop-up is open: the game is paused until it is dismissed."""
+    return current_game(request).tick()
+
+
+@app.post("/api/offer")
+def launch_offer(body: OfferRequest, request: Request):
+    """Start a good or bad offer. It then runs for a full day and locks until tomorrow, same time."""
+    return current_game(request).launch_offer(body.kind)
+
+
+@app.post("/api/trigger_event")
+def trigger_event(body: TriggerEventRequest, request: Request):
+    """Add an event (or "random"). It changes sales from the next hour on."""
+    return current_game(request).trigger_event(body.event)
+
+
+@app.post("/api/dismiss")
+def dismiss(request: Request):
+    """Close the pop-up that is open. The game carries on once there are none left."""
+    return current_game(request).dismiss_popup()
 
 
 # --------------------------------------------------------------------------- #
