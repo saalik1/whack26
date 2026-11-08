@@ -24,9 +24,11 @@ from pathlib import Path
 from typing import Dict, Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from backend import tester
 from backend.game import Game
 from backend.simulator2 import EVENTS, Shop
 
@@ -101,6 +103,44 @@ def trigger_event(body: TriggerEventRequest, request: Request):
 def dismiss(request: Request):
     """Close the pop-up that is open. The game carries on once there are none left."""
     return current_game(request).dismiss_popup()
+
+
+# --------------------------------------------------------------------------- #
+# "Test the AI": judge an offer on the player's own shop data (CSV) or ours
+# --------------------------------------------------------------------------- #
+
+class TestSummaryRequest(BaseModel):
+    csv: Optional[str] = None                  # CSV text; empty/None means "use our built-in data"
+
+
+class TestRunRequest(BaseModel):
+    csv: Optional[str] = None
+    offerDate: str                             # the day the offer came out, YYYY-MM-DD
+    days: int = 7                              # how many days the player watched the shop
+    extra: int = 0                             # how many MORE customers in total they saw over those days
+    location: str = ""                         # town or area, so DeepSeek can look for events there
+
+
+@app.post("/api/test_ai/summary")
+def test_summary(body: TestSummaryRequest):
+    try:
+        return tester.summary(body.csv)
+    except tester.CsvError as err:
+        raise HTTPException(400, str(err))
+
+
+@app.post("/api/test_ai/run")
+def test_run(body: TestRunRequest):
+    try:
+        return tester.run_test(body.csv, body.offerDate, body.days, body.extra, body.location)
+    except tester.CsvError as err:
+        raise HTTPException(400, str(err))
+
+
+@app.get("/api/test_ai/sample.csv", response_class=PlainTextResponse)
+def test_sample():
+    return PlainTextResponse(tester.sample_csv(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=sample_shop_data.csv"})
 
 
 # --------------------------------------------------------------------------- #

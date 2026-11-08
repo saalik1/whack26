@@ -76,8 +76,8 @@ function showConditions(data) {
   $('time').textContent = data.time;
   $('weather').textContent = data.weather;
   $('customers').textContent = data.customers;
-  $('prediction').textContent = data.nextPrediction;
-  $('rush').textContent = data.nextIsRush ? 'rush hour' : 'quieter hour';
+  $('prediction').textContent = data.next24;
+  $('rush').textContent = data.next24PeakTime ? `busiest around ${data.next24PeakTime}` : '';
   showWeatherIcon(data.weather);
 }
 function showScores(scores) {

@@ -263,13 +263,20 @@ class CarefulAgent:
         self._weights = [1 / (len(HABITS) + 1)] * (len(HABITS) + 1)   # trust in each habit predictor
         self._previous = "none"          # what the AI concluded about the previous offer
         self.offers_judged = 0
+        # Events an outside source (the DeepSeek helper) told us about: label -> (effect, uncertainty).
+        # Only used for events the AI has not learned from its own data.
+        self.external_events: dict = {}
 
     # ---- seeing the shop ---------------------------------------------------- #
 
     def _expected(self, rec: dict) -> float:
         if self.model is None:                      # no past data: fall back to the shop's forecast
             return max(1.0, float(rec["forecast"]))
-        return max(1.0, self.model.expected(rec))
+        base = max(1.0, self.model.expected(rec))
+        ext = self.external_events.get(rec.get("event"))
+        if ext is not None and rec["event"] not in self.model.event_labels:
+            base = max(1.0, base * (1 + ext[0]))
+        return base
 
     def expected_customers(self, record: HourRecord) -> float:
         """How many customers the AI expects in this hour with no offer, events included."""
@@ -277,6 +284,8 @@ class CarefulAgent:
 
     def event_effect(self, label: str):
         """How much the AI has learned this kind of event changes sales (None: never seen it)."""
+        if label in self.external_events and (self.model is None or label not in self.model.event_labels):
+            return self.external_events[label][0]
         return self.model.event_effect(label) if self.model is not None else None
 
     def observe(self, record: HourRecord) -> None:
@@ -309,8 +318,11 @@ class CarefulAgent:
         if self.model is not None:
             a = sum(e * self.model.x(v) for e, v in zip(exp, views))
             unseen = [(e, v["event"]) for e, v in zip(exp, views)
-                      if v["event"] and v["event"] not in self.model.event_labels]
-            extra = (UNKNOWN_EVENT_SD * sum(e for e, _ in unseen)) ** 2
+                      if v["event"] and v["event"] not in self.model.event_labels
+                      and v["event"] not in self.external_events]
+            told = [(e, self.external_events[v["event"]][1]) for e, v in zip(exp, views)
+                    if v["event"] in self.external_events and v["event"] not in self.model.event_labels]
+            extra = (UNKNOWN_EVENT_SD * sum(e for e, _ in unseen)) ** 2 + sum((sd * e) ** 2 for e, sd in told)
             infl = (self.model.dispersion * expected_total + float(a @ self.model.cov @ a) + extra) / expected_total
         L = _log_lik_ratios(seen, expected_total, infl)
 
@@ -369,7 +381,9 @@ class CarefulAgent:
         for label in order:
             eff = self.event_effect(label)
             hours = out[label]
-            if eff is None:
+            if label in self.external_events and (self.model is None or label not in self.model.event_labels):
+                text = f"{label} ({hours} h, new to me, but I was told it changes sales by about {eff:+.0%})"
+            elif eff is None:
                 text = f"{label} ({hours} h, new to me, so I left extra room for error)"
             else:
                 text = f"{label} ({hours} h, which I have seen change sales by about {eff:+.0%})"

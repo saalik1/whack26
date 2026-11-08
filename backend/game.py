@@ -95,6 +95,7 @@ class Game:
     def _response(self, ok: bool = True, error: Optional[str] = None) -> dict:
         last = self.shop.history[-1]
         forecast = self.shop.forecast_next_hour()
+        next24 = self.shop.forecast_hours(24)
         offer = None
         if self.offer:
             offer = {"kind": self.offer["kind"], "hoursDone": self.offer["hoursDone"],
@@ -115,6 +116,8 @@ class Game:
             "nextTime": f"{self.shop.weekday} {label_time(self.shop.hour)}",
             "nextPrediction": round(forecast["expected"]),
             "nextIsRush": forecast["expected"] >= RUSH_THRESHOLD,
+            "next24": next24["total"],                        # predicted customers over the next 24 hours
+            "next24PeakTime": next24["peak_label"],           # busiest hour in that stretch
             "activeEvent": active["label"] if event_running else None,
             "activeEventKey": active["key"] if event_running else None,
             "eventHoursLeft": active["hours_left"] if event_running else 0,

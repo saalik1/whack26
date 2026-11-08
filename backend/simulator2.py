@@ -237,6 +237,28 @@ class Shop:
             "is_rush_hour": expected >= RUSH_THRESHOLD,
         }
 
+    def forecast_hours(self, clock_hours: int = 24) -> dict:
+        """Baseline prediction for the next `clock_hours` hours of real time (the shop is closed
+        overnight, so only its open hours count). Same assumptions as forecast_next_hour:
+        no offer, weather unchanged, only a visible event (for the hours it has left)."""
+        total, peak, hours = 0.0, (0.0, None), 0
+        hour, wd, day = self.hour, self.weekday_idx, self.day
+        left = self.active_event["hours_left"] if (self.active_event and self.active_event["known"]) else 0
+        mult = self.active_event["mult"] if left else 1.0
+        for _ in range(clock_hours):
+            if hour in OPEN_HOURS:
+                e = expected_customers(wd, hour, self.weather, self.temperature_c, mult if left > 0 else 1.0, day)
+                total += e
+                hours += 1
+                left -= 1
+                if e > peak[0]:
+                    peak = (e, hour)
+            hour += 1
+            if hour > 23:
+                hour, wd, day = 0, (wd + 1) % 7, day + 1
+        return {"total": round(total), "open_hours": hours,
+                "peak_hour": peak[1], "peak_label": label_time(peak[1]) if peak[1] is not None else None}
+
     # ---- the main loop: ONE hour ------------------------------------------ #
 
     def step(self, action: str = "none", event: Optional[str] = None) -> HourRecord:

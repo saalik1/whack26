@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#efe0bd">
+  <title>Fool the AI — Test the AI</title>
+  <link rel="stylesheet" href="doodle.css">
+  <script type="module" src="test.js"></script>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar" aria-hidden="true">
+      <div class="lights"><i></i><i></i><i></i></div>
+      <div class="tab">Fool the AI</div>
+      <div class="address">little-shop.experiment/test</div>
+      <div class="chrome-extra">+</div>
+    </div>
+    <main class="content">
+      <header class="topbar">
+        <div class="brand"><h1>Test the AI</h1><p>Was that offer good or bad? Ask our careful AI.</p></div>
+        <div class="spacer"></div>
+        <a class="link-btn" href="index.html">Back</a>
+        <a class="link-btn" href="game.html">Start the game</a>
+      </header>
+
+      <p id="test-error" class="clock-msg" role="alert" hidden></p>
+
+      <div class="test-grid">
+        <section class="card test-card" aria-label="Shop data">
+          <h2 class="card-head">1. Your shop data</h2>
+          <div class="test-body">
+            <p>Upload a CSV of your shop's past sales, one row per hour (it must have dates). Nothing uploaded? We use our own six months of data.</p>
+            <label class="file-pick">
+              <input type="file" id="csv-file" accept=".csv,text/csv">
+              <span>Choose CSV file</span>
+            </label>
+            <button type="button" class="link-btn small" id="csv-clear" hidden>Use our data instead</button>
+            <p class="file-name" id="file-name">Using our built-in data.</p>
+            <details class="format">
+              <summary>What should the CSV look like?</summary>
+              <p>Needed: <b>customers</b> and <b>hour</b> (9 to 20). Recommended: <b>date</b> (2025-03-28). Optional: <b>weather</b>, <b>temperature</b>, <b>event</b>.</p>
+              <a href="/api/test_ai/sample.csv" download>Download an example</a>
+            </details>
+            <p class="data-summary" id="data-summary">Loading...</p>
+          </div>
+        </section>
+
+        <section class="card test-card" aria-label="The offer">
+          <h2 class="card-head">2. What you saw</h2>
+          <div class="test-body">
+            <div class="slider"><label for="location">Where is the shop? <small>(so DeepSeek can look for local events)</small></label>
+              <input type="text" id="location" class="date-input" maxlength="80" placeholder="e.g. Coventry, UK" autocomplete="off"></div>
+            <div class="slider"><label for="d-offer">The offer came out on <b id="v-weekday"></b></label>
+              <input type="date" id="d-offer" class="date-input"></div>
+            <div class="slider"><label for="s-days">After <b id="v-days">7</b> days...</label><input type="range" id="s-days" min="1" max="30" value="7"></div>
+            <div class="slider"><label for="s-extra">...you saw <b id="v-extra">100</b> more customers in total <small id="v-extra-pct"></small></label><input type="range" id="s-extra" min="0" max="1000" step="5" value="100"></div>
+            <button class="offer good test-run" id="run" type="button"><strong>Ask the AI</strong><span>Good offer or bad offer?</span></button>
+          </div>
+        </section>
+      </div>
+
+      <section class="card test-result" id="result" aria-live="polite" hidden>
+        <h2 class="card-head">3. The AI's answer</h2>
+        <div class="test-body">
+          <div class="answer-row single">
+            <div class="answer careful">
+              <h3>Careful AI</h3>
+              <span class="verdict-label" id="r-careful">-</span>
+              <p id="r-careful-text"></p>
+            </div>
+          </div>
+          <div class="events-box" id="events-box">
+            <h3>Events DeepSeek found</h3>
+            <p class="events-note" id="events-note"></p>
+            <ul class="events-list" id="events-list"></ul>
+          </div>
+          <div class="chart-wrap">
+            <svg id="chart" viewBox="0 0 700 220" role="img" aria-label="Customers per day before and after the offer"></svg>
+            <p class="chart-total" id="chart-total"></p>
+            <p class="chart-key"><span class="k actual"></span>customers that day <span class="k exp"></span>what the AI expected for that day <span class="k band"></span>days after the offer</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
